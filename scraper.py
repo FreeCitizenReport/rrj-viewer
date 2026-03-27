@@ -1,5 +1,4 @@
-"""
-Riverside Regional Jail — automated roster scraper
+""" Riverside Regional Jail — automated roster scraper
 Runs via GitHub Actions, outputs data.json
 """
 import requests, json, re, base64, time, os
@@ -8,20 +7,22 @@ from bs4 import BeautifulSoup
 BASE     = 'http://66.217.205.242:8180/IML'
 IMG_BASE = 'http://66.217.205.242:8180/imageservlet'
 LETTERS  = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+RESULT_CAP = 30          # IML silently caps results at this count
 
 OCIS_BASE = 'https://eapps.courts.state.va.us'
 OCIS_API  = OCIS_BASE + '/ocis-rest/api/public/'
 
-def search_letter(sess, letter):
+def search_prefix(sess, prefix):
+    """POST a last-name prefix search; returns list of inmate dicts."""
     try:
         r = sess.post(BASE, data={
-            'flow_action': 'searchbyname',
-            'quantity': '999',
-            'systemUser_lastName': letter,
-            'systemUser_firstName': '',
-            'systemUser_includereleasedinmate': 'Y',
+            'flow_action':                    'searchbyname',
+            'quantity':                       '999',
+            'systemUser_lastName':            prefix,
+            'systemUser_firstName':           '',
+            'systemUser_includereleasedinmate':  'Y',
             'systemUser_includereleasedinmate2': 'Y',
-            'searchtype': 'name'
+            'searchtype':                     'name'
         }, timeout=30)
         soup = BeautifulSoup(r.text, 'html.parser')
         result = []
@@ -40,8 +41,28 @@ def search_letter(sess, letter):
             })
         return result
     except Exception as e:
-        print(f'  Letter {letter} error: {e}')
+        print(f'  Prefix {prefix} error: {e}')
         return []
+
+def scan_prefix(sess, prefix, roster, depth=0):
+    """Recursively scan prefix, drilling deeper when result cap is hit."""
+    results = search_prefix(sess, prefix)
+    if len(results) < RESULT_CAP:
+        for inmate in results:
+            bn = inmate['bookingNum']
+            if bn:
+                roster[bn] = inmate
+    else:
+        # Hit the cap — drill down with an extra letter
+        if depth < 3:
+            for c in LETTERS:
+                scan_prefix(sess, prefix + c, roster, depth + 1)
+                time.sleep(0.15)
+        else:
+            for inmate in results:
+                bn = inmate['bookingNum']
+                if bn:
+                    roster[bn] = inmate
 
 def fetch_mugshot(sess, sysID, imgSysID):
     try:
@@ -66,7 +87,6 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
         html = r.text
         soup = BeautifulSoup(html, 'html.parser')
 
-        # Extract label:value pairs from adjacent <td> elements
         tds = soup.find_all('td')
         def get_val(label):
             for i, td in enumerate(tds):
@@ -80,7 +100,6 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
         commitment_date = get_val('Commitment Date:')
         location        = get_val('Current Location:')
 
-        # Bond section (Bond Information appears before Charge Information in HTML)
         bi = html.find('Bond Information')
         ci = html.find('Charge Information')
         bond_soup = BeautifulSoup(html[bi:ci] if bi >= 0 and ci > bi else '', 'html.parser')
@@ -94,7 +113,6 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
                     'amount':   cells[2] if len(cells) > 2 else '',
                 })
 
-        # Charge section
         charge_soup = BeautifulSoup(html[ci:] if ci >= 0 else '', 'html.parser')
         charges = []
         for row in charge_soup.find_all('tr', attrs={'bgcolor': lambda v: v and v.upper() in ('#FFFFFF', '#CCCCFF')}):
@@ -108,18 +126,13 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
                 })
 
         return {
-            'sex':            sex,
-            'race':           race,
-            'county':         county,
-            'commitmentDate': commitment_date,
-            'location':       location,
-            'charges':        charges,
-            'bonds':          bonds,
+            'sex': sex, 'race': race, 'county': county,
+            'commitmentDate': commitment_date, 'location': location,
+            'charges': charges, 'bonds': bonds,
         }
     except Exception as e:
         print(f'  Detail error sysID={sysID}: {e}')
         return {}
-
 
 def init_ocis_session(sess):
     """Accept OCIS 2.0 T&C once to establish a valid session."""
@@ -140,9 +153,7 @@ def fetch_va_court(sess, name, dob):
             'searchBy':       'N',
         }
         r = sess.post(
-            OCIS_API + 'search',
-            json=payload,
-            timeout=20,
+            OCIS_API + 'search', json=payload, timeout=20,
             headers={
                 'Content-Type': 'application/json',
                 'Referer': OCIS_BASE + '/ocis/search',
@@ -179,21 +190,17 @@ def main():
     sess.headers['User-Agent'] = 'Mozilla/5.0'
     init_ocis_session(sess)
 
-    # ── Load court_data.json (keyed by booking number) ───────────────────
     court_by_bn = {}
     if os.path.exists('court_data.json'):
         with open('court_data.json') as f:
             court_by_bn = json.load(f)
 
-    # ── Load previous data.json ───────────────────────────────────────────
     prev = {}
     if os.path.exists('data.json'):
         with open('data.json') as f:
             for rec in json.load(f):
                 prev[rec['bookingNum']] = rec
 
-    # ── Build name+DOB secondary index for court lookup ───────────────────
-    # Helps returning inmates who have a new booking number
     court_by_name_dob = {}
     for bn, cases in court_by_bn.items():
         p = prev.get(bn, {})
@@ -201,22 +208,18 @@ def main():
         if n and d and cases:
             court_by_name_dob[n.upper().strip() + '|' + d] = cases
 
-    # ── Phase 1: scrape current roster ───────────────────────────────────
+    # Phase 1: scrape full roster with recursive prefix expansion
     roster = {}
     for letter in LETTERS:
         print(f'Scanning {letter}...')
-        for inmate in search_letter(sess, letter):
-            bn = inmate['bookingNum']
-            if bn:
-                roster[bn] = inmate
-        time.sleep(0.4)
+        scan_prefix(sess, letter, roster)
+        time.sleep(0.3)
     print(f'Roster: {len(roster)} inmates')
 
-    # ── Phase 2: fetch mugshots + court records ───────────────────────────
+    # Phase 2: fetch mugshots + detail + court records
     records = []
     items = sorted(roster.items(), key=lambda x: x[0], reverse=True)
-    new_court = dict(court_by_bn)  # will be updated with any new lookups
-
+    new_court = dict(court_by_bn)
     for i, (bn, inmate) in enumerate(items):
         if i % 50 == 0:
             print(f'Processing {i}/{len(items)}...')
@@ -226,42 +229,39 @@ def main():
         if not mugshot:
             mugshot = ex.get('mugshot', '')
 
-        # Fetch full detail page (sex, race, county, charges, bonds)
         detail = fetch_inmate_detail(sess, inmate['sysID'], inmate['imgSysID'])
         time.sleep(0.2)
 
-        # Court history: booking# → name+DOB fallback → VA court scrape
         name_dob_key = inmate['name'].upper().strip() + '|' + inmate['dob']
         court_hist = (
-            court_by_bn.get(bn) or
-            court_by_name_dob.get(name_dob_key) or
-            ex.get('courtHistory', [])
+            court_by_bn.get(bn)
+            or court_by_name_dob.get(name_dob_key)
+            or ex.get('courtHistory', [])
         )
         if not court_hist:
             court_hist = fetch_va_court(sess, inmate['name'], inmate['dob'])
             if court_hist:
                 new_court[bn] = court_hist
                 print(f'  VA court: {inmate["name"]} → {len(court_hist)} cases')
-            time.sleep(0.3)
+        time.sleep(0.3)
 
         records.append({
             'bookingNum':    bn,
             'name':          inmate['name'],
             'dob':           inmate['dob'],
-            'sex':           detail.get('sex') or ex.get('sex', ''),
-            'race':          detail.get('race') or ex.get('race', ''),
-            'location':      detail.get('location') or ex.get('location', ''),
-            'county':        detail.get('county') or ex.get('county', ''),
+            'sex':           detail.get('sex')            or ex.get('sex', ''),
+            'race':          detail.get('race')           or ex.get('race', ''),
+            'location':      detail.get('location')       or ex.get('location', ''),
+            'county':        detail.get('county')         or ex.get('county', ''),
             'commitmentDate':detail.get('commitmentDate') or ex.get('commitmentDate', ''),
             'releaseDate':   inmate['releaseDate'],
-            'charges':       detail.get('charges') or ex.get('charges', []),
-            'bonds':         detail.get('bonds') or ex.get('bonds', []),
+            'charges':       detail.get('charges')        or ex.get('charges', []),
+            'bonds':         detail.get('bonds')          or ex.get('bonds', []),
             'mugshot':       mugshot,
             'courtHistory':  court_hist,
         })
         time.sleep(0.15)
 
-    # Save updated court_data.json if we found new entries
     if new_court != court_by_bn:
         with open('court_data.json', 'w') as f:
             json.dump(new_court, f, separators=(',', ':'))

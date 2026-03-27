@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Riverside Regional Jail â 2026 Booking Records</title>
+<title>Riverside Regional Jail — 2026 Booking Records</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -107,19 +107,19 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 <body>
 
 <div id="header">
-  <h1>ð RRJ 2026 Bookings</h1>
+  <h1>🏛 RRJ 2026 Bookings</h1>
   <div id="search-wrap">
-    <input id="search-input" type="text" placeholder="Search by nameâ¦" autocomplete="off">
+    <input id="search-input" type="text" placeholder="Search by name…" autocomplete="off">
     <div id="search-results"></div>
   </div>
   <div id="jump-wrap">
     <input id="jump-input" type="number" placeholder="#" min="1">
     <button onclick="doJump()">Go</button>
   </div>
-  <button id="filter-toggle" onclick="toggleFilters()">â Filters <span id="filter-count"></span></button>
+  <button id="filter-toggle" onclick="toggleFilters()">⚙ Filters <span id="filter-count"></span></button>
   <div id="nav-btns">
-    <button onclick="prev()">â Prev</button>
-    <button onclick="next()">Next â</button>
+    <button onclick="prev()">← Prev</button>
+    <button onclick="next()">Next →</button>
   </div>
   <div id="counter">Record 1 of 651</div>
 </div>
@@ -169,7 +169,7 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
   </div>
   <div class="filter-group">
     <div class="filter-label">Charge Keyword</div>
-    <input class="filter-text" id="f-charge" type="text" placeholder="e.g. drugs, assaultâ¦" oninput="applyFilters()">
+    <input class="filter-text" id="f-charge" type="text" placeholder="e.g. drugs, assault…" oninput="applyFilters()">
   </div>
   <div class="filter-group">
     <div class="filter-label">Court Records</div>
@@ -186,7 +186,7 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
       <option value="Acquitted">Acquitted</option><option value="Certified/Circuit">Certified/Circuit</option><option value="Closed">Closed</option><option value="DN">DN</option><option value="DO">DO</option><option value="Dismissed">Dismissed</option><option value="Dismissed/Expunged">Dismissed/Expunged</option><option value="Finding For">Finding For</option><option value="Guilty">Guilty</option><option value="Guilty (Alford)">Guilty (Alford)</option><option value="Guilty (Jury)">Guilty (Jury)</option><option value="Guilty (Reduced)">Guilty (Reduced)</option><option value="NIP">NIP</option><option value="No Finding">No Finding</option><option value="No True Bill">No True Bill</option><option value="Nolle Pros">Nolle Pros</option><option value="Not Guilty">Not Guilty</option><option value="Not Guilty/Insanity">Not Guilty/Insanity</option><option value="Other">Other</option><option value="Probation">Probation</option><option value="Remanded">Remanded</option><option value="Restored">Restored</option><option value="Reversed">Reversed</option><option value="Transferred">Transferred</option><option value="Withdrawn">Withdrawn</option>
     </select>
   </div>
-  <button id="clear-filters" onclick="clearFilters()">â Clear All</button>
+  <button id="clear-filters" onclick="clearFilters()">✕ Clear All</button>
   <div id="active-filters"></div>
 </div>
 
@@ -209,7 +209,7 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 <script>
 let RECORDS = [];
 
-// ââ Load data.json then start the app ââââââââââââââââââââââââââââââââââââ
+// ── Load data.json then start the app ────────────────────────────────────
 (function loadData() {
   const bar = document.getElementById('loading-bar');
   bar.style.width = '10%';
@@ -237,6 +237,7 @@ function preloadBlobs() {
     if (i >= RECORDS.length) {
       bar.style.width = '100%';
       setTimeout(() => bar.style.display = 'none', 600);
+      applyFilters();
       return;
     }
     const rec = RECORDS[i++];
@@ -370,12 +371,12 @@ function render() {
     <div class="id-row"><div class="id-label">Name</div><div class="id-value name">${rec.name}</div></div>
     <div class="id-row"><div class="id-label">Booking #</div><div class="id-value">${rec.bookingNum}</div></div>
     <div class="id-row"><div class="id-label">DOB</div><div class="id-value">${rec.dob}</div></div>
-    <div class="id-row"><div class="id-label">Sex / Race</div><div class="id-value">${[rec.sex, rec.race].filter(Boolean).join(' / ') || 'â'}</div></div>
-    <div class="id-row"><div class="id-label">Booked</div><div class="id-value">${rec.commitmentDate || 'â'}</div></div>
+    <div class="id-row"><div class="id-label">Sex / Race</div><div class="id-value">${[rec.sex, rec.race].filter(Boolean).join(' / ') || '—'}</div></div>
+    <div class="id-row"><div class="id-label">Booked</div><div class="id-value">${rec.commitmentDate || '—'}</div></div>
     <div class="id-row"><div class="id-label">Status</div><div class="id-value">${rec.releaseDate
       ? '<span class="badge badge-released">Released ' + rec.releaseDate + '</span>'
       : '<span class="badge badge-held">IN CUSTODY</span>'}</div></div>
-    <div class="id-row"><div class="id-label">County</div><div class="id-value">${rec.county || 'â'}</div></div>
+    <div class="id-row"><div class="id-label">County</div><div class="id-value">${rec.county || '—'}</div></div>
   `;
 
   // Charges
@@ -384,7 +385,7 @@ function render() {
   let chargeHTML = '';
   if (chargeCount > 0) {
     chargeHTML = rec.charges.map(c => {
-      const desc = chargeKw ? highlight(c.description || 'â', chargeKw) : (c.description || 'â');
+      const desc = chargeKw ? highlight(c.description || '—', chargeKw) : (c.description || '—');
       return `<div class="charge-card">
         <div class="charge-desc">${desc}</div>
         <div class="charge-meta">
@@ -420,8 +421,8 @@ function render() {
       const isMatch = filterDisp && c.dispositionDesc === filterDisp;
       return `<div class="case-card" style="${isMatch ? 'border-color:#e3b341;' : ''}">
         <div class="case-num">${c.formattedCaseNum || c.caseTrackingID}</div>
-        <div class="case-charge">${c.chargeDesc || 'â'}</div>
-        ${c.codeSection ? `<div class="case-code">Â§ ${c.codeSection}</div>` : ''}
+        <div class="case-charge">${c.chargeDesc || '—'}</div>
+        ${c.codeSection ? `<div class="case-code">§ ${c.codeSection}</div>` : ''}
         <div class="case-tags">
           <span class="tag tag-court">${c.court || 'Court'}</span>
           ${c.dispositionDesc ? `<span class="tag ${dispTagClass(c.dispositionDesc)}">${c.dispositionDesc}</span>` : ''}
@@ -476,7 +477,7 @@ searchInput.addEventListener('input', () => {
     const pos = filteredIndices.indexOf(i);
     return `<div class="search-item" onclick="goTo(${pos})">
       <div class="sname">${r.name}</div>
-      <div class="smeta">${r.bookingNum} Â· ${r.dob} Â· ${r.sex || ''} Â· ${r.county || ''}${r.courtHistory.length > 0 ? ' Â· ' + r.courtHistory.length + ' court records' : ''}</div>
+      <div class="smeta">${r.bookingNum} · ${r.dob} · ${r.sex || ''} · ${r.county || ''}${r.courtHistory.length > 0 ? ' · ' + r.courtHistory.length + ' court records' : ''}</div>
     </div>`;
   }).join('');
   searchResults.style.display = 'block';

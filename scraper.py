@@ -9,7 +9,8 @@ BASE     = 'http://66.217.205.242:8180/IML'
 IMG_BASE = 'http://66.217.205.242:8180/imageservlet'
 LETTERS  = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 
-VA_COURT = 'https://eapps.courts.state.va.us/gdcourts/caseSearch.do'
+OCIS_BASE = 'https://eapps.courts.state.va.us'
+OCIS_API  = OCIS_BASE + '/ocis-rest/api/public/'
 
 def search_letter(sess, letter):
     try:
@@ -52,56 +53,63 @@ def fetch_mugshot(sess, sysID, imgSysID):
         pass
     return ''
 
-def fetch_va_court(sess, name, dob):
-    """Search Virginia court system by name+DOB. Returns list of case dicts."""
+def init_ocis_session(sess):
+    """Accept OCIS 2.0 T&C once to establish a valid session."""
     try:
-        # Parse "LAST, FIRST" format
-        parts = name.split(',', 1)
-        last  = parts[0].strip()
-        first = parts[1].strip().split()[0] if len(parts) > 1 else ''
-        r = sess.get(VA_COURT, params={
-            'fromSidebar': 'true',
-            'searchDivision': 'T',
-            'searchLastName': last,
-            'searchFirstName': first,
-            'searchDOB': dob,
-            'searchCDLNumber': '',
-            'searchUCN': '',
-            'searchCaseNumber': '',
-            'searchFIPSCode': '',
-            'searchNameSearch': 'true',
-        }, timeout=20, headers={'Referer': VA_COURT})
+        sess.get(OCIS_BASE + '/ocis/landing', timeout=15)
+        sess.get(OCIS_API + 'termsAndCondAccepted', timeout=15)
+    except Exception as e:
+        print(f'  OCIS session init failed: {e}')
+
+def fetch_va_court(sess, name, dob):
+    """Search OCIS 2.0 statewide for adult criminal/traffic cases by name."""
+    try:
+        payload = {
+            'courtLevels':    [],
+            'divisions':      ['Adult Criminal/Traffic'],
+            'selectedCourts': [],
+            'searchString':   [name.strip()],
+            'searchBy':       'N',
+        }
+        r = sess.post(
+            OCIS_API + 'search',
+            json=payload,
+            timeout=20,
+            headers={
+                'Content-Type': 'application/json',
+                'Referer': OCIS_BASE + '/ocis/search',
+            }
+        )
         if not r.ok:
             return []
-        soup = BeautifulSoup(r.text, 'html.parser')
+        data = r.json()
+        results = (data.get('context', {})
+                       .get('entity', {})
+                       .get('payload', {})
+                       .get('searchResults', []))
         cases = []
-        for row in soup.select('table.tableborder tr'):
-            cells = [td.get_text(strip=True) for td in row.find_all('td')]
-            if len(cells) < 6:
-                continue
-            # Columns: Case#, Name, DOB, Charge, Court, OffenseDate
-            case_num = cells[0].strip()
-            if not re.match(r'[A-Z]{2}\d+', case_num):
-                continue
+        for row in results:
             cases.append({
-                'formattedCaseNum': case_num,
-                'caseTrackingID':   re.sub(r'\D', '', case_num),
-                'court':            cells[4] if len(cells) > 4 else '',
-                'courtLevel':       'G',
-                'offenseDate':      cells[5] if len(cells) > 5 else '',
-                'codeSection':      '',
-                'chargeDesc':       cells[3] if len(cells) > 3 else '',
-                'dispositionDate':  '',
+                'formattedCaseNum': row.get('formattedCaseNumber', ''),
+                'caseTrackingID':   row.get('caseNumber', ''),
+                'court':            row.get('qualifiedFips', ''),
+                'courtLevel':       row.get('courtLevel', ''),
+                'offenseDate':      row.get('offenseDate', ''),
+                'codeSection':      row.get('codeSection', ''),
+                'chargeDesc':       row.get('chargeDesc', ''),
+                'dispositionDate':  row.get('hearingDate', ''),
                 'dispositionDesc':  '',
                 'sentence':         '',
             })
         return cases
     except Exception as e:
+        print(f'  OCIS error for {name}: {e}')
         return []
 
 def main():
     sess = requests.Session()
     sess.headers['User-Agent'] = 'Mozilla/5.0'
+    init_ocis_session(sess)
 
     # ── Load court_data.json (keyed by booking number) ───────────────────
     court_by_bn = {}

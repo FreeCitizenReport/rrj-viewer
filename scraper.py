@@ -53,6 +53,74 @@ def fetch_mugshot(sess, sysID, imgSysID):
         pass
     return ''
 
+def fetch_inmate_detail(sess, sysID, imgSysID):
+    """Fetch detail page: sex, race, county, commitmentDate, charges, bonds."""
+    try:
+        r = sess.post(BASE, data={
+            'flow_action': 'edit',
+            'sysID':       sysID,
+            'imgSysID':    imgSysID,
+        }, timeout=30)
+        if not r.ok:
+            return {}
+        html = r.text
+        soup = BeautifulSoup(html, 'html.parser')
+
+        # Extract label:value pairs from adjacent <td> elements
+        tds = soup.find_all('td')
+        def get_val(label):
+            for i, td in enumerate(tds):
+                if td.get_text(strip=True) == label and i + 1 < len(tds):
+                    return tds[i + 1].get_text(strip=True)
+            return ''
+
+        sex             = get_val('Sex:')
+        race            = get_val('Race:')
+        county          = get_val('County:')
+        commitment_date = get_val('Commitment Date:')
+        location        = get_val('Current Location:')
+
+        # Bond section (Bond Information appears before Charge Information in HTML)
+        bi = html.find('Bond Information')
+        ci = html.find('Charge Information')
+        bond_soup = BeautifulSoup(html[bi:ci] if bi >= 0 and ci > bi else '', 'html.parser')
+        bonds = []
+        for row in bond_soup.find_all('tr', attrs={'bgcolor': lambda v: v and v.upper() == '#FFFFFF'}):
+            cells = [td.get_text(strip=True) for td in row.find_all('td')]
+            if len(cells) >= 2 and cells[1]:
+                bonds.append({
+                    'caseNum':  cells[0],
+                    'bondType': cells[1],
+                    'amount':   cells[2] if len(cells) > 2 else '',
+                })
+
+        # Charge section
+        charge_soup = BeautifulSoup(html[ci:] if ci >= 0 else '', 'html.parser')
+        charges = []
+        for row in charge_soup.find_all('tr', attrs={'bgcolor': lambda v: v and v.upper() in ('#FFFFFF', '#CCCCFF')}):
+            cells = [td.get_text(strip=True) for td in row.find_all('td')]
+            if len(cells) >= 4 and any(cells[1:4]):
+                charges.append({
+                    'offenseDate': cells[1] if len(cells) > 1 else '',
+                    'code':        cells[2] if len(cells) > 2 else '',
+                    'description': cells[3] if len(cells) > 3 else '',
+                    'grade':       cells[4] if len(cells) > 4 else '',
+                })
+
+        return {
+            'sex':            sex,
+            'race':           race,
+            'county':         county,
+            'commitmentDate': commitment_date,
+            'location':       location,
+            'charges':        charges,
+            'bonds':          bonds,
+        }
+    except Exception as e:
+        print(f'  Detail error sysID={sysID}: {e}')
+        return {}
+
+
 def init_ocis_session(sess):
     """Accept OCIS 2.0 T&C once to establish a valid session."""
     try:
@@ -158,6 +226,10 @@ def main():
         if not mugshot:
             mugshot = ex.get('mugshot', '')
 
+        # Fetch full detail page (sex, race, county, charges, bonds)
+        detail = fetch_inmate_detail(sess, inmate['sysID'], inmate['imgSysID'])
+        time.sleep(0.2)
+
         # Court history: booking# → name+DOB fallback → VA court scrape
         name_dob_key = inmate['name'].upper().strip() + '|' + inmate['dob']
         court_hist = (
@@ -176,14 +248,14 @@ def main():
             'bookingNum':    bn,
             'name':          inmate['name'],
             'dob':           inmate['dob'],
-            'sex':           ex.get('sex', ''),
-            'race':          ex.get('race', ''),
-            'location':      ex.get('location', ''),
-            'county':        ex.get('county', ''),
-            'commitmentDate':ex.get('commitmentDate', ''),
+            'sex':           detail.get('sex') or ex.get('sex', ''),
+            'race':          detail.get('race') or ex.get('race', ''),
+            'location':      detail.get('location') or ex.get('location', ''),
+            'county':        detail.get('county') or ex.get('county', ''),
+            'commitmentDate':detail.get('commitmentDate') or ex.get('commitmentDate', ''),
             'releaseDate':   inmate['releaseDate'],
-            'charges':       ex.get('charges', []),
-            'bonds':         ex.get('bonds', []),
+            'charges':       detail.get('charges') or ex.get('charges', []),
+            'bonds':         detail.get('bonds') or ex.get('bonds', []),
             'mugshot':       mugshot,
             'courtHistory':  court_hist,
         })

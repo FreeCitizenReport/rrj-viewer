@@ -11,18 +11,44 @@ RESULT_CAP = 30          # IML silently caps results at this count
 OCIS_BASE  = 'https://eapps.courts.state.va.us'
 OCIS_API   = OCIS_BASE + '/ocis-rest/api/public/'
 
-# The IML system returns a specific real person's photo as a default whenever an
-# inmate has no mugshot uploaded yet. There are 4 known variants (different crops/
-# resolutions of the same person). Identified by (byte_length, byte_sum) pairs.
+# Seed set of known IML placeholder (byte_length, byte_sum) pairs.
+# Extended automatically at runtime by scanning for duplicates in existing data.
 PLACEHOLDER_IMAGES = {
-    (25746, 3080175),  # side-profile, small  — 1191 occurrences in data
-    (73903, 9438458),  # front-facing, large  —  112 occurrences in data
-    (49164, 7087067),  # alternate version    —    6 occurrences in data
-    (53081, 6320605),  # 4th variant          —    4+ occurrences in data
+    (25746, 3080175),  # side-profile, small
+    (73903, 9438458),  # front-facing, large
+    (49164, 7087067),  # alternate version
+    (53081, 6320605),  # 4th variant
 }
 
-# Data-URI string lengths for each known placeholder (for fast incremental cache-bust)
-PLACEHOLDER_DATA_URI_LENS = {34351, 98563, 65575, 70799}
+def _bytes_sig(content):
+    """Return (byte_length, byte_sum) signature for image bytes."""
+    return (len(content), sum(content) & 0xFFFFFFFF)
+
+def _uri_sig(data_uri):
+    """Return (byte_length, byte_sum) for a base64 data URI, or None on error."""
+    try:
+        b64 = data_uri.split(',', 1)[1]
+        content = base64.b64decode(b64)
+        return _bytes_sig(content)
+    except Exception:
+        return None
+
+def is_placeholder_uri(data_uri):
+    """Return True if this data URI encodes a known IML placeholder image."""
+    if not data_uri or len(data_uri) < 100:
+        return False
+    sig = _uri_sig(data_uri)
+    return sig is not None and sig in PLACEHOLDER_IMAGES
+
+def _image_data(content):
+    """Convert raw bytes to a data URI; returns '' for known placeholder images."""
+    if len(content) > 500:
+        sig = _bytes_sig(content)
+        if sig in PLACEHOLDER_IMAGES:
+            return ''
+        mime = 'image/png' if content[:4] == b'\x89PNG' else 'image/jpeg'
+        return f'data:{mime};base64,' + base64.b64encode(content).decode()
+    return ''
 
 def search_prefix(sess, prefix):
     """POST a last-name prefix search; returns list of inmate dicts."""
@@ -39,7 +65,7 @@ def search_prefix(sess, prefix):
         soup = BeautifulSoup(r.text, 'html.parser')
         result = []
         for tr in soup.find_all('tr', onclick=True):
-            m = re.search(r"rowClicked\('(\d+)','(\d+)','(\d+)'\)", tr['onclick'])
+            m = re.search(r"rowClicked\\('(\\d+)','(\\d+)','(\\d+)'\\)", tr['onclick'])
             if not m: continue
             cells = [td.get_text(strip=True) for td in tr.find_all('td')]
             if len(cells) < 4: continue
@@ -72,17 +98,6 @@ def scan_prefix(sess, prefix, roster, depth=0):
             for inmate in results:
                 bn = inmate['bookingNum']
                 if bn: roster[bn] = inmate
-
-def _image_data(content):
-    """Convert raw bytes to a data URI; returns '' for known placeholder images."""
-    if len(content) > 500:
-        # Reject any of the known IML placeholder photos
-        bsum = (sum(content) & 0xFFFFFFFF)
-        if (len(content), bsum) in PLACEHOLDER_IMAGES:
-            return ''
-        mime = 'image/png' if content[:4] == b'\x89PNG' else 'image/jpeg'
-        return f'data:{mime};base64,' + base64.b64encode(content).decode()
-    return ''
 
 def fetch_mugshot(sess, sysID, imgSysID):
     """Fetch mugshot from imageservlet; 3 attempts with 1s backoff."""
@@ -238,6 +253,35 @@ def fetch_va_court(sess, name, dob):
         print(f'  OCIS error for {name}: {e}')
         return []
 
+def auto_detect_placeholders(prev):
+    """Scan existing mugshots for duplicates across DIFFERENT people.
+    If the same image bytes appear in records belonging to 2+ distinct
+    (name, dob) pairs, it must be an IML placeholder — no two different
+    people would legitimately share an identical mugshot.
+    (Same photo across multiple bookings of the same person is fine.)
+    Extends the global PLACEHOLDER_IMAGES set in-place."""
+    sig_to_people = {}
+    for rec in prev.values():
+        mug = rec.get('mugshot', '')
+        if not mug or len(mug) < 100:
+            continue
+        sig = _uri_sig(mug)
+        if sig is None:
+            continue
+        person_key = (rec.get('name', '').upper().strip(), rec.get('dob', ''))
+        if sig not in sig_to_people:
+            sig_to_people[sig] = set()
+        sig_to_people[sig].add(person_key)
+    new_found = 0
+    new_records = 0
+    for sig, people in sig_to_people.items():
+        if len(people) >= 2 and sig not in PLACEHOLDER_IMAGES:
+            PLACEHOLDER_IMAGES.add(sig)
+            new_found += 1
+            new_records += len(people)
+    if new_found:
+        print(f'Auto-detected {new_found} new placeholder variants ({new_records} records affected)')
+
 def main():
     sess = requests.Session()
     sess.headers['User-Agent'] = 'Mozilla/5.0'
@@ -253,6 +297,11 @@ def main():
         with open('data.json') as f:
             for rec in json.load(f):
                 prev[rec['bookingNum']] = rec
+
+    # Auto-extend PLACEHOLDER_IMAGES from any duplicates in existing data
+    print(f'Scanning {len(prev)} existing records for placeholder patterns...')
+    auto_detect_placeholders(prev)
+    print(f'Total known placeholder variants: {len(PLACEHOLDER_IMAGES)}')
 
     court_by_name_dob = {}
     for bn, cases in court_by_bn.items():
@@ -277,10 +326,9 @@ def main():
 
         ex = prev.get(bn, {})
 
-        # Determine what we still need to fetch for this record
-        # Also re-fetch if cached mugshot is a known IML placeholder image
+        # Re-fetch if no mugshot or if cached mugshot is a known placeholder
         cached_mug   = ex.get('mugshot', '')
-        need_mugshot = not cached_mug or len(cached_mug) in PLACEHOLDER_DATA_URI_LENS
+        need_mugshot = not cached_mug or is_placeholder_uri(cached_mug)
         need_detail  = not ex.get('sex') or ex.get('charges') is None
 
         if need_mugshot or need_detail:
@@ -309,9 +357,9 @@ def main():
                         break
 
             if not mugshot:
-                mugshot = ''   # don't fall back to a cached placeholder
+                mugshot = ''   # never store a placeholder
         else:
-            # Existing complete record — reuse everything, no HTTP fetches needed
+            # Existing complete record with a real photo — skip HTTP fetches
             mugshot = ex['mugshot']
             detail  = {
                 'sex':      ex.get('sex', ''),    'race':           ex.get('race', ''),

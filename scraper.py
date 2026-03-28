@@ -13,6 +13,11 @@ RESULT_CAP = 30          # IML silently caps results at this count
 OCIS_BASE = 'https://eapps.courts.state.va.us'
 OCIS_API  = OCIS_BASE + '/ocis-rest/api/public/'
 
+# Fingerprint of the IML default placeholder mugshot — a specific real person's
+# photo the system serves for any inmate with no photo yet uploaded.
+PLACEHOLDER_SIZE     = 25746
+PLACEHOLDER_CHECKSUM = 3080175
+
 def search_prefix(sess, prefix):
     """POST a last-name prefix search; returns list of inmate dicts."""
     try:
@@ -66,8 +71,12 @@ def scan_prefix(sess, prefix, roster, depth=0):
                     roster[bn] = inmate
 
 def _image_data(content):
-    """Convert raw bytes to a data URI if it looks like a valid image."""
+    """Convert raw bytes to a data URI; returns '' for the known placeholder."""
     if len(content) > 500:
+        # Reject the IML default placeholder photo (wrong person shown as default)
+        if len(content) == PLACEHOLDER_SIZE:
+            if (sum(content) & 0xFFFFFFFF) == PLACEHOLDER_CHECKSUM:
+                return ''
         mime = 'image/png' if content[:4] == b'\x89PNG' else 'image/jpeg'
         return f'data:{mime};base64,' + base64.b64encode(content).decode()
     return ''

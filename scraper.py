@@ -13,10 +13,14 @@ RESULT_CAP = 30          # IML silently caps results at this count
 OCIS_BASE = 'https://eapps.courts.state.va.us'
 OCIS_API  = OCIS_BASE + '/ocis-rest/api/public/'
 
-# Fingerprint of the IML default placeholder mugshot — a specific real person's
-# photo the system serves for any inmate with no photo yet uploaded.
-PLACEHOLDER_SIZE     = 25746
-PLACEHOLDER_CHECKSUM = 3080175
+# The IML system returns a specific real person's photo as a default whenever an
+# inmate has no mugshot uploaded yet. There are 3 known variants (different crops/
+# resolutions of the same person). Identified by (byte_length, byte_sum) pairs.
+PLACEHOLDER_IMAGES = {
+    (25746, 3080175),   # side-profile, small  — 1191 occurrences in data
+    (73903, 9438458),   # front-facing, large  —  112 occurrences in data
+    (49164, 7087067),   # alternate version    —    6 occurrences in data
+}
 
 def search_prefix(sess, prefix):
     """POST a last-name prefix search; returns list of inmate dicts."""
@@ -59,7 +63,6 @@ def scan_prefix(sess, prefix, roster, depth=0):
             if bn:
                 roster[bn] = inmate
     else:
-        # Hit the cap — drill down with an extra letter
         if depth < 3:
             for c in LETTERS:
                 scan_prefix(sess, prefix + c, roster, depth + 1)
@@ -71,12 +74,12 @@ def scan_prefix(sess, prefix, roster, depth=0):
                     roster[bn] = inmate
 
 def _image_data(content):
-    """Convert raw bytes to a data URI; returns '' for the known placeholder."""
+    """Convert raw bytes to a data URI; returns '' for known placeholder images."""
     if len(content) > 500:
-        # Reject the IML default placeholder photo (wrong person shown as default)
-        if len(content) == PLACEHOLDER_SIZE:
-            if (sum(content) & 0xFFFFFFFF) == PLACEHOLDER_CHECKSUM:
-                return ''
+        # Reject any of the known IML placeholder photos
+        bsum = (sum(content) & 0xFFFFFFFF)
+        if (len(content), bsum) in PLACEHOLDER_IMAGES:
+            return ''
         mime = 'image/png' if content[:4] == b'\x89PNG' else 'image/jpeg'
         return f'data:{mime};base64,' + base64.b64encode(content).decode()
     return ''
@@ -98,9 +101,7 @@ def fetch_mugshot(sess, sysID, imgSysID):
 
 def fetch_inmate_detail(sess, sysID, imgSysID):
     """Fetch detail page: sex, race, county, commitmentDate, charges, bonds.
-    Also returns 'mugshot_img_src' if an <img> pointing to imageservlet is found
-    (useful as fallback for very-recently-booked inmates whose imageservlet
-    entry isn't ready yet but whose detail page already embeds the photo)."""
+    Also returns 'mugshot_img_src' if an <img> pointing to imageservlet is found."""
     try:
         r = sess.post(BASE, data={
             'flow_action': 'edit',

@@ -101,7 +101,7 @@ def fetch_mugshot(sess, sysID, imgSysID):
 
 def fetch_inmate_detail(sess, sysID, imgSysID):
     """Fetch detail page: sex, race, county, commitmentDate, charges, bonds.
-    Also returns 'mugshot_img_src' if an <img> pointing to imageservlet is found."""
+    Also returns 'mugshot_img_srcs' (list) if <img> tags pointing to imageservlet is found."""
     try:
         r = sess.post(BASE, data={
             'flow_action': 'edit',
@@ -125,14 +125,18 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
         commitment_date = get_val('Commitment Date:')
         location        = get_val('Current Location:')
 
-        mugshot_img_src = ''
+        mugshot_img_srcs = []
         for img in soup.find_all('img'):
             src = img.get('src', '')
             if 'imageservlet' in src.lower():
-                if src.startswith('/'):
+                if src.startswith('http'):
+                    pass
+                elif src.startswith('/'):
                     src = IMG_HOST + src
-                mugshot_img_src = src
-                break
+                else:
+                    src = IMG_HOST + '/' + src
+                if src not in mugshot_img_srcs:
+                    mugshot_img_srcs.append(src)
 
         bi = html.find('Bond Information')
         ci = html.find('Charge Information')
@@ -173,7 +177,7 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
             'location':       location,
             'charges':        charges,
             'bonds':          bonds,
-            'mugshot_img_src': mugshot_img_src,
+            'mugshot_img_srcs': mugshot_img_srcs,
         }
     except Exception as e:
         print(f'  Detail error sysID={sysID}: {e}')
@@ -291,10 +295,12 @@ def main():
         detail = fetch_inmate_detail(sess, inmate['sysID'], inmate['imgSysID'])
         time.sleep(0.2)
 
-        if not mugshot and detail.get('mugshot_img_src'):
-            mugshot = fetch_mugshot_from_url(sess, detail['mugshot_img_src'])
-            if mugshot:
-                print(f'  Mugshot via detail fallback: {inmate["name"]}')
+        if not mugshot:
+            for _src in detail.get('mugshot_img_srcs', []):
+                mugshot = fetch_mugshot_from_url(sess, _src)
+                if mugshot:
+                    print(f'  Mugshot via detail fallback: {inmate["name"]}')
+                    break
 
         if not mugshot:
             mugshot = ex.get('mugshot', '')

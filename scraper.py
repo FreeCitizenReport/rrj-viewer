@@ -65,13 +65,16 @@ def scan_prefix(sess, prefix, roster, depth=0):
                     roster[bn] = inmate
 
 def fetch_mugshot(sess, sysID, imgSysID):
-    try:
-        r = sess.get(f'{IMG_BASE}?sysid={sysID}&imgsysid={imgSysID}', timeout=15)
-        if r.ok and len(r.content) > 500:
-            mime = 'image/png' if r.content[:4] == b'\x89PNG' else 'image/jpeg'
-            return f'data:{mime};base64,' + base64.b64encode(r.content).decode()
-    except:
-        pass
+    for attempt in range(3):
+        try:
+            r = sess.get(f'{IMG_BASE}?sysid={sysID}&imgsysid={imgSysID}', timeout=15)
+            if r.ok and len(r.content) > 500:
+                mime = 'image/png' if r.content[:4] == b'\x89PNG' else 'image/jpeg'
+                return f'data:{mime};base64,' + base64.b64encode(r.content).decode()
+        except:
+            pass
+        if attempt < 2:
+            time.sleep(1)
     return ''
 
 def fetch_inmate_detail(sess, sysID, imgSysID):

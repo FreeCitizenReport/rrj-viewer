@@ -290,20 +290,46 @@ def main():
             print(f'Processing {i}/{len(items)}...')
         ex = prev.get(bn, {})
 
-        mugshot = fetch_mugshot(sess, inmate['sysID'], inmate['imgSysID'])
+        # Determine what we still need to fetch for this record
+        need_mugshot = not ex.get('mugshot')
+        need_detail  = not ex.get('sex') or ex.get('charges') is None
 
-        detail = fetch_inmate_detail(sess, inmate['sysID'], inmate['imgSysID'])
-        time.sleep(0.2)
+        if need_mugshot or need_detail:
+            if need_mugshot:
+                mugshot = fetch_mugshot(sess, inmate['sysID'], inmate['imgSysID'])
+            else:
+                mugshot = ex['mugshot']
 
-        if not mugshot:
-            for _src in detail.get('mugshot_img_srcs', []):
-                mugshot = fetch_mugshot_from_url(sess, _src)
-                if mugshot:
-                    print(f'  Mugshot via detail fallback: {inmate["name"]}')
-                    break
+            if need_detail:
+                detail = fetch_inmate_detail(sess, inmate['sysID'], inmate['imgSysID'])
+                time.sleep(0.2)
+            else:
+                detail = {
+                    'sex': ex.get('sex', ''), 'race': ex.get('race', ''),
+                    'county': ex.get('county', ''), 'location': ex.get('location', ''),
+                    'commitmentDate': ex.get('commitmentDate', ''),
+                    'charges': ex.get('charges', []), 'bonds': ex.get('bonds', []),
+                    'mugshot_img_srcs': [],
+                }
 
-        if not mugshot:
-            mugshot = ex.get('mugshot', '')
+            if not mugshot:
+                for _src in detail.get('mugshot_img_srcs', []):
+                    mugshot = fetch_mugshot_from_url(sess, _src)
+                    if mugshot:
+                        print(f'  Mugshot via detail fallback: {inmate["name"]}')
+                        break
+
+            if not mugshot:
+                mugshot = ex.get('mugshot', '')
+        else:
+            # Existing complete record — reuse everything, no HTTP fetches needed
+            mugshot = ex['mugshot']
+            detail  = {
+                'sex': ex.get('sex', ''), 'race': ex.get('race', ''),
+                'county': ex.get('county', ''), 'location': ex.get('location', ''),
+                'commitmentDate': ex.get('commitmentDate', ''),
+                'charges': ex.get('charges', []), 'bonds': ex.get('bonds', []),
+            }
 
         name_dob_key = inmate['name'].upper().strip() + '|' + inmate['dob']
         court_hist = (

@@ -364,7 +364,7 @@ function render() {
   // Mugshot
   const img = document.getElementById('mugshot');
   img.src = mugshotURLs[rec.bookingNum] || rec.mugshot ||
-    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="210" height="210"><rect width="210" height="210" fill="%230d1117"/><text x="105" y="115" text-anchor="middle" fill="%238b949e" font-size="44">?</text></svg>';
+    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="210" height="210"><rect width="210" height="210" fill="%230d1117"/><rect x="55" y="75" width="100" height="72" rx="8" fill="none" stroke="%238b949e" stroke-width="3"/><circle cx="105" cy="111" r="22" fill="none" stroke="%238b949e" stroke-width="3"/><rect x="88" y="65" width="34" height="12" rx="4" fill="%238b949e"/><text x="105" y="170" text-anchor="middle" fill="%238b949e" font-size="13">Photo Uploading...</text></svg>';
 
   // ID panel
   document.getElementById('id-info').innerHTML = `

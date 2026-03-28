@@ -1,38 +1,40 @@
-"""
-Riverside Regional Jail — automated roster scraper
-Runs via GitHub Actions, outputs data.json
-"""
+""" Riverside Regional Jail — automated roster scraper
+Runs via GitHub Actions, outputs data.json """
 import requests, json, re, base64, time, os
 from bs4 import BeautifulSoup
 
-BASE     = 'http://66.217.205.242:8180/IML'
-IMG_BASE = 'http://66.217.205.242:8180/imageservlet'
-IMG_HOST = 'http://66.217.205.242:8180'
-LETTERS  = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+BASE      = 'http://66.217.205.242:8180/IML'
+IMG_BASE  = 'http://66.217.205.242:8180/imageservlet'
+IMG_HOST  = 'http://66.217.205.242:8180'
+LETTERS   = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 RESULT_CAP = 30          # IML silently caps results at this count
-OCIS_BASE = 'https://eapps.courts.state.va.us'
-OCIS_API  = OCIS_BASE + '/ocis-rest/api/public/'
+OCIS_BASE  = 'https://eapps.courts.state.va.us'
+OCIS_API   = OCIS_BASE + '/ocis-rest/api/public/'
 
 # The IML system returns a specific real person's photo as a default whenever an
-# inmate has no mugshot uploaded yet. There are 3 known variants (different crops/
+# inmate has no mugshot uploaded yet. There are 4 known variants (different crops/
 # resolutions of the same person). Identified by (byte_length, byte_sum) pairs.
 PLACEHOLDER_IMAGES = {
-    (25746, 3080175),   # side-profile, small  — 1191 occurrences in data
-    (73903, 9438458),   # front-facing, large  —  112 occurrences in data
-    (49164, 7087067),   # alternate version    —    6 occurrences in data
+    (25746, 3080175),  # side-profile, small  — 1191 occurrences in data
+    (73903, 9438458),  # front-facing, large  —  112 occurrences in data
+    (49164, 7087067),  # alternate version    —    6 occurrences in data
+    (53081, 6320605),  # 4th variant          —    4+ occurrences in data
 }
+
+# Data-URI string lengths for each known placeholder (for fast incremental cache-bust)
+PLACEHOLDER_DATA_URI_LENS = {34351, 98563, 65575, 70799}
 
 def search_prefix(sess, prefix):
     """POST a last-name prefix search; returns list of inmate dicts."""
     try:
         r = sess.post(BASE, data={
-            'flow_action':                    'searchbyname',
-            'quantity':                       '999',
-            'systemUser_lastName':            prefix,
-            'systemUser_firstName':           '',
+            'flow_action':                  'searchbyname',
+            'quantity':                     '999',
+            'systemUser_lastName':          prefix,
+            'systemUser_firstName':         '',
             'systemUser_includereleasedinmate':  'Y',
             'systemUser_includereleasedinmate2': 'Y',
-            'searchtype':                     'name'
+            'searchtype': 'name'
         }, timeout=30)
         soup = BeautifulSoup(r.text, 'html.parser')
         result = []
@@ -60,18 +62,16 @@ def scan_prefix(sess, prefix, roster, depth=0):
     if len(results) < RESULT_CAP:
         for inmate in results:
             bn = inmate['bookingNum']
-            if bn:
-                roster[bn] = inmate
+            if bn: roster[bn] = inmate
     else:
         if depth < 3:
             for c in LETTERS:
                 scan_prefix(sess, prefix + c, roster, depth + 1)
-                time.sleep(0.15)
+            time.sleep(0.15)
         else:
             for inmate in results:
                 bn = inmate['bookingNum']
-                if bn:
-                    roster[bn] = inmate
+                if bn: roster[bn] = inmate
 
 def _image_data(content):
     """Convert raw bytes to a data URI; returns '' for known placeholder images."""
@@ -91,12 +91,9 @@ def fetch_mugshot(sess, sysID, imgSysID):
             r = sess.get(f'{IMG_BASE}?sysid={sysID}&imgsysid={imgSysID}', timeout=15)
             if r.ok:
                 data = _image_data(r.content)
-                if data:
-                    return data
-        except:
-            pass
-        if attempt < 2:
-            time.sleep(1)
+                if data: return data
+        except: pass
+        if attempt < 2: time.sleep(1)
     return ''
 
 def fetch_inmate_detail(sess, sysID, imgSysID):
@@ -108,12 +105,10 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
             'sysID':       sysID,
             'imgSysID':    imgSysID,
         }, timeout=30)
-        if not r.ok:
-            return {}
+        if not r.ok: return {}
         html = r.text
         soup = BeautifulSoup(html, 'html.parser')
-
-        tds = soup.find_all('td')
+        tds  = soup.find_all('td')
         def get_val(label):
             for i, td in enumerate(tds):
                 if td.get_text(strip=True) == label and i + 1 < len(tds):
@@ -124,7 +119,6 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
         county          = get_val('County:')
         commitment_date = get_val('Commitment Date:')
         location        = get_val('Current Location:')
-
         mugshot_img_srcs = []
         for img in soup.find_all('img'):
             src = img.get('src', '')
@@ -137,7 +131,6 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
                     src = IMG_HOST + '/' + src
                 if src not in mugshot_img_srcs:
                     mugshot_img_srcs.append(src)
-
         bi = html.find('Bond Information')
         ci = html.find('Charge Information')
         bond_soup = BeautifulSoup(
@@ -154,7 +147,6 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
                     'bondType': cells[1],
                     'amount':   cells[2] if len(cells) > 2 else '',
                 })
-
         charge_soup = BeautifulSoup(html[ci:] if ci >= 0 else '', 'html.parser')
         charges = []
         for row in charge_soup.find_all('tr', attrs={
@@ -168,7 +160,6 @@ def fetch_inmate_detail(sess, sysID, imgSysID):
                     'description': cells[3] if len(cells) > 3 else '',
                     'grade':       cells[4] if len(cells) > 4 else '',
                 })
-
         return {
             'sex':            sex,
             'race':           race,
@@ -190,12 +181,9 @@ def fetch_mugshot_from_url(sess, url):
             r = sess.get(url, timeout=15)
             if r.ok:
                 data = _image_data(r.content)
-                if data:
-                    return data
-        except:
-            pass
-        if attempt < 2:
-            time.sleep(1)
+                if data: return data
+        except: pass
+        if attempt < 2: time.sleep(1)
     return ''
 
 def init_ocis_session(sess):
@@ -225,8 +213,7 @@ def fetch_va_court(sess, name, dob):
                 'Referer':      OCIS_BASE + '/ocis/search',
             }
         )
-        if not r.ok:
-            return []
+        if not r.ok: return []
         data = r.json()
         results = (data.get('context', {})
                        .get('entity', {})
@@ -235,16 +222,16 @@ def fetch_va_court(sess, name, dob):
         cases = []
         for row in results:
             cases.append({
-                'formattedCaseNum': row.get('formattedCaseNumber', ''),
-                'caseTrackingID':   row.get('caseNumber', ''),
-                'court':            row.get('qualifiedFips', ''),
-                'courtLevel':       row.get('courtLevel', ''),
-                'offenseDate':      row.get('offenseDate', ''),
-                'codeSection':      row.get('codeSection', ''),
-                'chargeDesc':       row.get('chargeDesc', ''),
-                'dispositionDate':  row.get('hearingDate', ''),
-                'dispositionDesc':  '',
-                'sentence':         '',
+                'formattedCaseNum':  row.get('formattedCaseNumber', ''),
+                'caseTrackingID':    row.get('caseNumber', ''),
+                'court':             row.get('qualifiedFips', ''),
+                'courtLevel':        row.get('courtLevel', ''),
+                'offenseDate':       row.get('offenseDate', ''),
+                'codeSection':       row.get('codeSection', ''),
+                'chargeDesc':        row.get('chargeDesc', ''),
+                'dispositionDate':   row.get('hearingDate', ''),
+                'dispositionDesc':   '',
+                'sentence':          '',
             })
         return cases
     except Exception as e:
@@ -286,12 +273,14 @@ def main():
     new_court = dict(court_by_bn)
 
     for i, (bn, inmate) in enumerate(items):
-        if i % 50 == 0:
-            print(f'Processing {i}/{len(items)}...')
+        if i % 50 == 0: print(f'Processing {i}/{len(items)}...')
+
         ex = prev.get(bn, {})
 
         # Determine what we still need to fetch for this record
-        need_mugshot = not ex.get('mugshot')
+        # Also re-fetch if cached mugshot is a known IML placeholder image
+        cached_mug   = ex.get('mugshot', '')
+        need_mugshot = not cached_mug or len(cached_mug) in PLACEHOLDER_DATA_URI_LENS
         need_detail  = not ex.get('sex') or ex.get('charges') is None
 
         if need_mugshot or need_detail:
@@ -305,10 +294,10 @@ def main():
                 time.sleep(0.2)
             else:
                 detail = {
-                    'sex': ex.get('sex', ''), 'race': ex.get('race', ''),
-                    'county': ex.get('county', ''), 'location': ex.get('location', ''),
+                    'sex':      ex.get('sex', ''),    'race':           ex.get('race', ''),
+                    'county':   ex.get('county', ''), 'location':       ex.get('location', ''),
                     'commitmentDate': ex.get('commitmentDate', ''),
-                    'charges': ex.get('charges', []), 'bonds': ex.get('bonds', []),
+                    'charges':  ex.get('charges', []), 'bonds':         ex.get('bonds', []),
                     'mugshot_img_srcs': [],
                 }
 
@@ -320,22 +309,22 @@ def main():
                         break
 
             if not mugshot:
-                mugshot = ex.get('mugshot', '')
+                mugshot = ''   # don't fall back to a cached placeholder
         else:
             # Existing complete record — reuse everything, no HTTP fetches needed
             mugshot = ex['mugshot']
             detail  = {
-                'sex': ex.get('sex', ''), 'race': ex.get('race', ''),
-                'county': ex.get('county', ''), 'location': ex.get('location', ''),
+                'sex':      ex.get('sex', ''),    'race':           ex.get('race', ''),
+                'county':   ex.get('county', ''), 'location':       ex.get('location', ''),
                 'commitmentDate': ex.get('commitmentDate', ''),
-                'charges': ex.get('charges', []), 'bonds': ex.get('bonds', []),
+                'charges':  ex.get('charges', []), 'bonds':         ex.get('bonds', []),
             }
 
         name_dob_key = inmate['name'].upper().strip() + '|' + inmate['dob']
         court_hist = (
-            court_by_bn.get(bn) or
-            court_by_name_dob.get(name_dob_key) or
-            ex.get('courtHistory', [])
+            court_by_bn.get(bn)
+            or court_by_name_dob.get(name_dob_key)
+            or ex.get('courtHistory', [])
         )
         if not court_hist:
             court_hist = fetch_va_court(sess, inmate['name'], inmate['dob'])

@@ -18,6 +18,7 @@ PLACEHOLDER_IMAGES = {
     (73903, 9438458),  # front-facing, large
     (49164, 7087067),  # alternate version
     (53081, 6320605),  # 4th variant
+    (71133, 8644992),  # 5th variant
 }
 
 def _bytes_sig(content):

@@ -87,6 +87,8 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 .tag-other { background: #1f262d; color: #8b949e; }
 .tag-date { background: #1f262d; color: #8b949e; }
 .tag-sentence { background: #3a1f5f; color: #d2a8ff; }
+        .tag-related { background: #3a2a0a; color: #e3b341; border: 1px dashed #7d5c00; }
+        .case-defendant { font-size: 11px; color: #8b949e; margin-bottom: 3px; font-style: italic; }
 .no-records-msg { color: #8b949e; font-size: 13px; font-style: italic; padding: 6px 0; }
 
 /* Search dropdown */
@@ -355,7 +357,12 @@ function highlight(text, kw) {
   return text.slice(0, idx) + '<span class="hl">' + text.slice(idx, idx + kw.length) + '</span>' + text.slice(idx + kw.length);
 }
 
-function render() {
+function normalizeName(n) {
+      if (!n) return '';
+      return n.toUpperCase().replace(/\b(JR|SR|II|III|IV|V)\b\.?/g, '').replace(/\s+/g, ' ').trim();
+    }
+
+    function render() {
   if (filteredIndices.length === 0) return;
   const idx = filteredIndices[filteredPos];
   const rec = RECORDS[idx];
@@ -419,12 +426,15 @@ function render() {
     const filterDisp = document.getElementById('f-disp').value;
     document.getElementById('court-section').innerHTML = rec.courtHistory.map(c => {
       const isMatch = filterDisp && c.dispositionDesc === filterDisp;
+          const exactNameMatch = !c.defendantName || normalizeName(c.defendantName) === normalizeName(rec.name);
       return `<div class="case-card" style="${isMatch ? 'border-color:#e3b341;' : ''}">
         <div class="case-num">${c.formattedCaseNum || c.caseTrackingID}</div>
+    ${!exactNameMatch ? `<div class="case-defendant">Court name: ${c.defendantName}</div>` : ''}
         <div class="case-charge">${c.chargeDesc || '—'}</div>
         ${c.codeSection ? `<div class="case-code">§ ${c.codeSection}</div>` : ''}
         <div class="case-tags">
           <span class="tag tag-court">${c.court || 'Court'}</span>
+      ${!exactNameMatch ? `<span class="tag tag-related">⚠ Potentially Related</span>` : ''}
           ${c.dispositionDesc ? `<span class="tag ${dispTagClass(c.dispositionDesc)}">${c.dispositionDesc}</span>` : ''}
           ${c.offenseDate ? `<span class="tag tag-date">Offense: ${c.offenseDate}</span>` : ''}
           ${c.dispositionDate ? `<span class="tag tag-date">Disposed: ${c.dispositionDate}</span>` : ''}

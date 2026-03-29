@@ -22,6 +22,14 @@ jobs:
       - name: Install dependencies
         run: pip install requests beautifulsoup4
 
+      - name: Restore data.json if wiped
+        run: |
+          DATA_SIZE=$(wc -c < data.json)
+          if [ "$DATA_SIZE" -lt 1000 ]; then
+            echo "data.json empty, restoring..."
+            curl -fsSL -o data.json "https://raw.githubusercontent.com/FreeCitizenReport/rrj-viewer/0ba984e/data.json"
+          fi
+
       - name: Run scraper
         run: python scraper.py
 

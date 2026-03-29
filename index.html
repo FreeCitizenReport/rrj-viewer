@@ -267,7 +267,7 @@ let RECORDS = [];
       function fetchFull() {
         return fetch('data.json?v=' + Date.now())
           .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-          .then(data => { RECORDS = data; bar.style.width = '40%'; preloadBlobs(); });
+          .then(data => { RECORDS = data; bar.style.width = '40%'; applyFilters(); document.getElementById('loading-overlay')?.classList.add('hidden'); preloadBlobs(); });
       }
       fetch('recent.json?v=' + Date.now())
         .then(r => r.ok ? r.json() : Promise.reject())

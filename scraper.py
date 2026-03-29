@@ -1,6 +1,6 @@
 """ Riverside Regional Jail — automated roster scraper
 Runs via GitHub Actions, outputs data.json """
-import requests, json, re, base64, time, os
+import requests, json, re, base64, time, os, datetime
 from bs4 import BeautifulSoup
 
 BASE      = 'http://66.217.205.242:8180/IML'
@@ -248,6 +248,7 @@ def fetch_va_court(sess, name, dob):
                 'dispositionDate':   row.get('hearingDate', ''),
                 'dispositionDesc':   '',
                 'sentence':          '',
+                'defendantName':      row.get('name', ''),
             })
         return cases
     except Exception as e:
@@ -336,7 +337,10 @@ def main():
         # Re-fetch if no mugshot or if cached mugshot is a known placeholder
         cached_mug   = ex.get('mugshot', '')
         need_mugshot = not cached_mug or is_placeholder_uri(cached_mug)
-        need_detail  = not ex.get('sex') or ex.get('charges') is None
+        curr_yr_pfx  = '{:02d}-'.format(datetime.date.today().year % 100)
+        need_detail  = (not ex.get('sex') or
+                        ex.get('charges') is None or
+                        (ex.get('charges') == [] and bn[:3] == curr_yr_pfx))
 
         if need_mugshot or need_detail:
             if need_mugshot:

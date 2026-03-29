@@ -104,6 +104,39 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 
 /* Highlight for filter matches */
 .hl { background: #332200; border-radius: 3px; padding: 0 2px; color: #e3b341; font-weight: 700; }
+
+/* ── RESPONSIVE / MOBILE ───────────────────────────────── */
+@media (max-width: 768px) {
+  /* Make body scrollable instead of fixed-height panels */
+  body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
+
+  /* Header: wrap onto 2 rows, search bar expands */
+  #header { flex-wrap: wrap; padding: 8px 10px; gap: 6px; }
+  #search-wrap { flex: 1 1 130px; min-width: 0; }
+  #search-input { width: 100%; box-sizing: border-box; }
+  #search-results { width: calc(100vw - 20px); left: 0; }
+  #counter { flex: 1 1 100%; text-align: center; }
+
+  /* Stack the three panels vertically */
+  #main { flex-direction: column; overflow: visible; height: auto; }
+
+  /* Left: inmate info — 2-column grid to save vertical space */
+  #left-panel { width: 100%; height: auto; border-right: none; border-bottom: 1px solid #30363d; flex-shrink: 0; }
+  #id-info { overflow-y: visible; flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+  /* Name (1st), Status (6th), County (7th) span full width */
+  #id-info > .id-row:nth-child(1),
+  #id-info > .id-row:nth-child(6),
+  #id-info > .id-row:nth-child(7) { grid-column: 1 / -1; }
+
+  /* Center: mugshot + charges — expand to natural height */
+  #center-panel { flex: none; width: 100%; height: auto; overflow: visible; border-right: none; border-bottom: 1px solid #30363d; }
+  #mugshot-wrap { height: 260px; flex-shrink: 0; }
+  #charges-section { overflow-y: visible; height: auto; }
+
+  /* Right: court history — expand to natural height */
+  #right-panel { width: 100%; flex: none; height: auto; overflow: visible; }
+  #court-section { overflow-y: visible; height: auto; }
+}
 </style>
 </head>
 <body>

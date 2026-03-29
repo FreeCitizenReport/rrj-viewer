@@ -417,6 +417,10 @@ def main():
     with open('data.json', 'w') as f:
         json.dump(records, f, separators=(',', ':'))
     print(f'Saved {len(records)} records to data.json')
+    recent = sorted(records, key=lambda r: r['bookingNum'], reverse=True)[:100]
+    with open('recent.json', 'w') as f:
+        json.dump(recent, f, separators=(',', ':'))
+    print(f'Saved {len(recent)} recent records to recent.json')
 
 if __name__ == '__main__':
     main()

@@ -137,6 +137,19 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
   #right-panel { width: 100%; flex: none; height: auto; overflow: visible; }
   #court-section { overflow-y: visible; height: auto; }
 }
+
+/* DISCLAIMER */
+#disclaimer { background: #1c2128; border-bottom: 1px solid #30363d; padding: 5px 14px; text-align: center; font-size: 11px; color: #8b949e; flex-shrink: 0; letter-spacing: 0.3px; }
+/* LOADING OVERLAY */
+#main { position: relative; }
+#loading-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; z-index: 10; gap: 14px; }
+#loading-overlay.hidden { display: none; }
+.spin { width: 36px; height: 36px; border: 3px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: spin-anim 0.8s linear infinite; }
+@keyframes spin-anim { to { transform: rotate(360deg); } }
+.loading-text { color: #8b949e; font-size: 13px; }
+/* MUGSHOT — hide broken/empty src */
+#mugshot[src=""], #mugshot:not([src]) { visibility: hidden; }
+
 </style>
 </head>
 <body>
@@ -159,7 +172,8 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
   <div id="counter">Record 1 of 651</div>
 </div>
 
-<div id="filter-bar">
+<div id="disclaimer">⚖️ All defendants are presumed innocent until proven guilty in a court of law.</div>
+    <div id="filter-bar">
   <div class="filter-group">
     <div class="filter-label">Sex</div>
     <select id="f-sex" onchange="applyFilters()">
@@ -226,11 +240,12 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 </div>
 
 <div id="main">
+      <div id="loading-overlay"><div class="spin"></div><div class="loading-text">Loading records…</div></div>
   <div id="left-panel">
     <div id="id-info"></div>
   </div>
   <div id="center-panel">
-    <div id="mugshot-wrap"><img id="mugshot" src="" alt="Mugshot"></div>
+    <div id="mugshot-wrap"><img id="mugshot" alt="Mugshot"></div>
     <div class="panel-title" id="charges-title">Charges &amp; Bond</div>
     <div id="charges-section"></div>
   </div>
@@ -246,21 +261,21 @@ let RECORDS = [];
 
 // ── Load data.json then start the app ────────────────────────────────────
 (function loadData() {
-  const bar = document.getElementById('loading-bar');
-  bar.style.width = '10%';
-  fetch('data.json?v=' + Date.now())
-    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(data => {
-      RECORDS = data;
-      bar.style.width = '40%';
-      preloadBlobs();
-    })
-    .catch(err => {
-      bar.style.background = '#da3633';
-      bar.style.width = '100%';
-      console.error('Failed to load data.json:', err);
-    });
-})();
+      const bar = document.getElementById('loading-bar');
+      const overlay = document.getElementById('loading-overlay');
+      bar.style.width = '5%';
+      function fetchFull() {
+        return fetch('data.json?v=' + Date.now())
+          .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(data => { RECORDS = data; bar.style.width = '40%'; preloadBlobs(); });
+      }
+      fetch('recent.json?v=' + Date.now())
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(recent => { RECORDS = recent; bar.style.width = '20%'; if (overlay) overlay.classList.add('hidden'); applyFilters(); })
+        .catch(() => {})
+        .then(() => fetchFull())
+        .catch(err => { bar.style.background = '#da3633'; bar.style.width = '100%'; console.error('Load failed:', err); });
+    })();
 
 
 // Preload mugshots as blob URLs
@@ -538,8 +553,10 @@ document.addEventListener('click', e => {
     searchResults.style.display = 'none';
 });
 
-// Init
-render();
+// Service worker
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(() => {}); }
+    // Init
+    render();
 </script>
 </body>
 </html>

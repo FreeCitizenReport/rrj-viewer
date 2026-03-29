@@ -288,6 +288,7 @@ function preloadBlobs() {
       bar.style.width = '100%';
       setTimeout(() => bar.style.display = 'none', 600);
       applyFilters();
+      document.getElementById('loading-overlay')?.classList.add('hidden');
       return;
     }
     const rec = RECORDS[i++];

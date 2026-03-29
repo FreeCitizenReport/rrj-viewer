@@ -65,7 +65,7 @@ def search_prefix(sess, prefix):
         soup = BeautifulSoup(r.text, 'html.parser')
         result = []
         for tr in soup.find_all('tr', onclick=True):
-            m = re.search(r"rowClicked\\('(\\d+)','(\\d+)','(\\d+)'\\)", tr['onclick'])
+            m = re.search(r"rowClicked\('(\d+)','(\d+)','(\d+)'\)", tr['onclick'])
             if not m: continue
             cells = [td.get_text(strip=True) for td in tr.find_all('td')]
             if len(cells) < 4: continue
@@ -316,6 +316,12 @@ def main():
         scan_prefix(sess, letter, roster)
         time.sleep(0.3)
     print(f'Roster: {len(roster)} inmates')
+
+    # Safety: if roster is unexpectedly empty but we had prior data, IML is likely down.
+    # Abort without overwriting data.json to prevent data loss.
+    if len(roster) == 0 and len(prev) > 0:
+        print(f'WARNING: Roster is empty but {len(prev)} records existed — IML server may be down, aborting.')
+        import sys; sys.exit(0)
 
     records = []
     items = sorted(roster.items(), key=lambda x: x[0], reverse=True)

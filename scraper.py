@@ -421,6 +421,10 @@ def main():
     with open('recent.json', 'w') as f:
         json.dump(recent, f, separators=(',', ':'))
     print(f'Saved {len(recent)} recent records to recent.json')
+    latest = recent[:1]
+    with open('latest.json', 'w') as f:
+        json.dump(latest, f, separators=(',', ':'))
+    print(f'Saved latest record to latest.json')
 
 if __name__ == '__main__':
     main()

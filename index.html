@@ -261,21 +261,28 @@ let RECORDS = [];
 
 // ── Load data.json then start the app ────────────────────────────────────
 (function loadData() {
-      const bar = document.getElementById('loading-bar');
-      const overlay = document.getElementById('loading-overlay');
-      bar.style.width = '5%';
-      function fetchFull() {
-        return fetch('data.json?v=' + Date.now())
-          .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-          .then(data => { RECORDS = data; bar.style.width = '40%'; applyFilters(); document.getElementById('loading-overlay')?.classList.add('hidden'); preloadBlobs(); });
-      }
-      fetch('recent.json?v=' + Date.now())
-        .then(r => r.ok ? r.json() : Promise.reject())
-        .then(recent => { RECORDS = recent; bar.style.width = '20%'; if (overlay) overlay.classList.add('hidden'); applyFilters(); })
-        .catch(() => {})
-        .then(() => fetchFull())
-        .catch(err => { bar.style.background = '#da3633'; bar.style.width = '100%'; console.error('Load failed:', err); });
-    })();
+  const bar = document.getElementById('loading-bar');
+  const overlay = document.getElementById('loading-overlay');
+  bar.style.width = '5%';
+  function fetchFull() {
+    return fetch('data.json?v=' + Date.now())
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(data => { RECORDS = data; bar.style.width = '100%'; applyFilters(); preloadBlobs(); });
+  }
+  // Step 1: latest.json (~1 record, served from SW cache instantly on repeat visits)
+  fetch('latest.json?v=' + Date.now())
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(d => { RECORDS = d; bar.style.width = '10%'; applyFilters(); if (overlay) overlay.classList.add('hidden'); })
+    .catch(() => {})
+  // Step 2: recent.json (100 records)
+    .then(() => fetch('recent.json?v=' + Date.now()))
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(d => { RECORDS = d; bar.style.width = '30%'; applyFilters(); if (overlay) overlay.classList.add('hidden'); })
+    .catch(() => {})
+  // Step 3: full data
+    .then(() => fetchFull())
+    .catch(err => { bar.style.background = '#da3633'; console.error('Load failed:', err); });
+})();
 
 
 // Preload mugshots as blob URLs

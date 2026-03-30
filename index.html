@@ -7,7 +7,6 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-
 /* HEADER */
 #header { background: #161b22; border-bottom: 1px solid #30363d; padding: 8px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: nowrap; }
 #header h1 { font-size: 14px; font-weight: 700; color: #f0f6fc; white-space: nowrap; }
@@ -23,7 +22,6 @@ button.active-filter { background: #1f3a5f; border-color: #1f6feb; color: #79c0f
 #counter { font-size: 12px; color: #8b949e; margin-left: auto; white-space: nowrap; }
 #counter .filtered-count { color: #e3b341; font-weight: 600; }
 #nav-btns { display: flex; gap: 4px; }
-
 /* FILTER BAR */
 #filter-bar { background: #0d1117; border-bottom: 1px solid #30363d; padding: 8px 14px; display: none; flex-wrap: wrap; gap: 8px; align-items: flex-end; flex-shrink: 0; }
 #filter-bar.open { display: flex; }
@@ -36,10 +34,8 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 #active-filters span { background: #1f3a5f; color: #79c0ff; border-radius: 10px; padding: 2px 8px; margin-right: 4px; }
 #clear-filters { background: #4a1818; border-color: #da3633; color: #ff7b72; }
 #clear-filters:hover { background: #da3633; color: #fff; }
-
 /* MAIN */
 #main { display: flex; flex: 1; overflow: hidden; }
-
 /* LEFT PANEL */
 #left-panel { width: 210px; flex-shrink: 0; background: #161b22; border-right: 1px solid #30363d; display: flex; flex-direction: column; overflow: hidden; }
 #mugshot-wrap { width: 100%; height: 320px; background: #0d1117; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-bottom: 1px solid #30363d; }
@@ -52,7 +48,6 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
 .badge-held { background: #da3633; color: #fff; }
 .badge-released { background: #238636; color: #fff; }
-
 /* CENTER */
 #center-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid #30363d; min-width: 0; }
 .panel-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: #8b949e; padding: 8px 12px 7px; border-bottom: 1px solid #30363d; flex-shrink: 0; }
@@ -69,7 +64,6 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 .bond-type { font-weight: 600; color: #e3b341; }
 .bond-amount { color: #3fb950; font-weight: 600; }
 .empty-msg { color: #8b949e; font-size: 13px; font-style: italic; padding: 6px 0; }
-
 /* RIGHT */
 #right-panel { width: 400px; flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden; }
 #court-section { flex: 1; overflow-y: auto; padding: 10px; }
@@ -87,10 +81,9 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 .tag-other { background: #1f262d; color: #8b949e; }
 .tag-date { background: #1f262d; color: #8b949e; }
 .tag-sentence { background: #3a1f5f; color: #d2a8ff; }
-        .tag-related { background: #3a2a0a; color: #e3b341; border: 1px dashed #7d5c00; }
-        .case-defendant { font-size: 11px; color: #8b949e; margin-bottom: 3px; font-style: italic; }
+.tag-related { background: #3a2a0a; color: #e3b341; border: 1px dashed #7d5c00; }
+.case-defendant { font-size: 11px; color: #8b949e; margin-bottom: 3px; font-style: italic; }
 .no-records-msg { color: #8b949e; font-size: 13px; font-style: italic; padding: 6px 0; }
-
 /* Search dropdown */
 #search-results { position: absolute; top: 34px; left: 0; background: #161b22; border: 1px solid #30363d; border-radius: 7px; max-height: 280px; overflow-y: auto; width: 300px; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.6); display: none; }
 .search-item { padding: 7px 11px; cursor: pointer; border-bottom: 1px solid #21262d; font-size: 12px; }
@@ -98,58 +91,121 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 .search-item:hover { background: #21262d; }
 .search-item .sname { color: #58a6ff; font-weight: 600; }
 .search-item .smeta { color: #8b949e; font-size: 11px; margin-top: 1px; }
-
 /* Loading bar */
 #loading-bar { position: fixed; bottom: 0; left: 0; height: 3px; background: #1f6feb; z-index: 300; transition: width 0.2s; }
-
 /* Highlight for filter matches */
 .hl { background: #332200; border-radius: 3px; padding: 0 2px; color: #e3b341; font-weight: 700; }
-
-/* ── RESPONSIVE / MOBILE ───────────────────────────────── */
 @media (max-width: 768px) {
-  /* Make body scrollable instead of fixed-height panels */
   body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
-
-  /* Header: wrap onto 2 rows, search bar expands */
   #header { flex-wrap: wrap; padding: 8px 10px; gap: 6px; }
   #search-wrap { flex: 1 1 130px; min-width: 0; }
   #search-input { width: 100%; box-sizing: border-box; }
   #search-results { width: calc(100vw - 20px); left: 0; }
   #counter { flex: 1 1 100%; text-align: center; }
-
-  /* Stack the three panels vertically */
   #main { flex-direction: column; overflow: visible; height: auto; }
-
-  /* Left: inmate info — 2-column grid to save vertical space */
   #left-panel { width: 100%; height: auto; border-right: none; border-bottom: 1px solid #30363d; flex-shrink: 0; }
   #id-info { overflow-y: visible; flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
-  /* Name (1st), Status (6th), County (7th) span full width */
-  #id-info > .id-row:nth-child(1),
-  #id-info > .id-row:nth-child(6),
-  #id-info > .id-row:nth-child(7) { grid-column: 1 / -1; }
-
-  /* Center: mugshot + charges — expand to natural height */
+  #id-info > .id-row:nth-child(1), #id-info > .id-row:nth-child(6), #id-info > .id-row:nth-child(7) { grid-column: 1 / -1; }
   #center-panel { flex: none; width: 100%; height: auto; overflow: visible; border-right: none; border-bottom: 1px solid #30363d; }
   #mugshot-wrap { height: 260px; flex-shrink: 0; }
   #charges-section { overflow-y: visible; height: auto; }
-
-  /* Right: court history — expand to natural height */
   #right-panel { width: 100%; flex: none; height: auto; overflow: visible; }
   #court-section { overflow-y: visible; height: auto; }
+  #ad-panel { width: 100%; border-left: none; border-top: 1px solid #30363d; flex-direction: column; overflow-y: visible; padding: 12px; }
 }
-
-/* DISCLAIMER */
 #disclaimer { background: #1c2128; border-bottom: 1px solid #30363d; padding: 5px 14px; text-align: center; font-size: 11px; color: #8b949e; flex-shrink: 0; letter-spacing: 0.3px; }
-/* LOADING OVERLAY */
 #main { position: relative; }
 #loading-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; z-index: 10; gap: 14px; }
 #loading-overlay.hidden { display: none; }
 .spin { width: 36px; height: 36px; border: 3px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: spin-anim 0.8s linear infinite; }
 @keyframes spin-anim { to { transform: rotate(360deg); } }
 .loading-text { color: #8b949e; font-size: 13px; }
-/* MUGSHOT — hide broken/empty src */
 #mugshot[src=""], #mugshot:not([src]) { visibility: hidden; }
-
+#ad-panel {
+  width: 230px;
+  flex-shrink: 0;
+  background: #0d1117;
+  border-left: 1px solid #30363d;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 10px 8px;
+  gap: 10px;
+}
+.ad-panel-title {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #6e7681;
+  text-align: center;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #30363d;
+}
+.ad-unit {
+  border-radius: 8px;
+  padding: 10px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border: 1px solid #30363d;
+}
+.ad-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.ad-headline {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f0f6fc;
+  line-height: 1.4;
+}
+.ad-body {
+  font-size: 11px;
+  color: #8b949e;
+  line-height: 1.45;
+}
+.ad-cta {
+  display: block;
+  text-align: center;
+  padding: 7px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  margin-top: 3px;
+  transition: opacity 0.15s;
+  cursor: pointer;
+}
+.ad-cta:hover { opacity: 0.82; }
+.ad-disclaimer {
+  font-size: 9px;
+  color: #6e7681;
+  text-align: center;
+  padding: 6px 2px 2px;
+  line-height: 1.5;
+  border-top: 1px solid #30363d;
+  margin-top: 2px;
+}
+.ad-bail    { background: #160c0c; border-color: #6e1515; }
+.ad-bail .ad-tag { color: #ff7b72; }
+.ad-bail .ad-cta { background: #da3633; color: #fff; }
+.ad-attorney { background: #120d1e; border-color: #3a1f6e; }
+.ad-attorney .ad-tag { color: #d2a8ff; }
+.ad-attorney .ad-cta { background: #6e40c9; color: #fff; }
+.ad-removal { background: #0a1420; border-color: #1f4070; }
+.ad-removal .ad-tag { color: #79c0ff; }
+.ad-removal .ad-cta { background: #1f6feb; color: #fff; }
+.ad-case    { background: #0a160a; border-color: #1a4a1a; }
+.ad-case .ad-tag { color: #3fb950; }
+.ad-case .ad-cta { background: #238636; color: #fff; }
+.ad-win     { background: #181400; border-color: #4a3e00; }
+.ad-win .ad-tag { color: #e3b341; }
+.ad-win .ad-cta { background: #9e6a03; color: #fff; }
+.ad-nobond  { background: #0a1a1c; border-color: #1a3e45; }
+.ad-nobond .ad-tag { color: #39d3d3; }
+.ad-nobond .ad-cta { background: #138a85; color: #fff; }
 </style>
 </head>
 <body>
@@ -173,7 +229,8 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 </div>
 
 <div id="disclaimer">⚖️ All defendants are presumed innocent until proven guilty in a court of law.</div>
-    <div id="filter-bar">
+
+<div id="filter-bar">
   <div class="filter-group">
     <div class="filter-label">Sex</div>
     <select id="f-sex" onchange="applyFilters()">
@@ -195,7 +252,7 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
     <div class="filter-label">County / Jurisdiction</div>
     <select id="f-county" onchange="applyFilters()">
       <option value="">All</option>
-      <option value="BLAND COUNTY">BLAND COUNTY</option><option value="BRUNSWICK COUNTY">BRUNSWICK COUNTY</option><option value="BUCKINGHAM COUNTY">BUCKINGHAM COUNTY</option><option value="CHARLES CITY COUNTY">CHARLES CITY COUNTY</option><option value="CHESTERFIELD COUNTY">CHESTERFIELD COUNTY</option><option value="CITY OF COLONIAL HEIGHTS">CITY OF COLONIAL HEIGHTS</option><option value="CITY OF HAMPTON">CITY OF HAMPTON</option><option value="CITY OF HOPEWELL">CITY OF HOPEWELL</option><option value="CITY OF PETERSBURG">CITY OF PETERSBURG</option><option value="CITY OF PORTSMOUTH">CITY OF PORTSMOUTH</option><option value="CITY OF RICHMOND">CITY OF RICHMOND</option><option value="CITY OF ROANOKE">CITY OF ROANOKE</option><option value="CITY OF VIRGINIA BEACH">CITY OF VIRGINIA BEACH</option><option value="FAIRFAX COUNTY">FAIRFAX COUNTY</option><option value="FED. BUREAU OF PRISONS (DETENTION)">FED. BUREAU OF PRISONS (DETENTION)</option><option value="GILES COUNTY">GILES COUNTY</option><option value="INS (IMMIGRATION & NATURALIZATION)">INS (IMMIGRATION & NATURALIZATION)</option><option value="NEW KENT COUNTY">NEW KENT COUNTY</option><option value="PRINCE GEORGE COUNTY">PRINCE GEORGE COUNTY</option><option value="SURRY COUNTY">SURRY COUNTY</option>
+      <option value="BLAND COUNTY">BLAND COUNTY</option><option value="BRUNSWICK COUNTY">BRUNSWICK COUNTY</option><option value="BUCKINGHAM COUNTY">BUCKINGHAM COUNTY</option><option value="CHARLES CITY COUNTY">CHARLES CITY COUNTY</option><option value="CHESTERFIELD COUNTY">CHESTERFIELD COUNTY</option><option value="CITY OF COLONIAL HEIGHTS">CITY OF COLONIAL HEIGHTS</option><option value="CITY OF HAMPTON">CITY OF HAMPTON</option><option value="CITY OF HOPEWELL">CITY OF HOPEWELL</option><option value="CITY OF PETERSBURG">CITY OF PETERSBURG</option><option value="CITY OF PORTSMOUTH">CITY OF PORTSMOUTH</option><option value="CITY OF RICHMOND">CITY OF RICHMOND</option><option value="CITY OF ROANOKE">CITY OF ROANOKE</option><option value="CITY OF VIRGINIA BEACH">CITY OF VIRGINIA BEACH</option><option value="FAIRFAX COUNTY">FAIRFAX COUNTY</option><option value="FED. BUREAU OF PRISONS (DETENTION)">FED. BUREAU OF PRISONS (DETENTION)</option><option value="GILES COUNTY">GILES COUNTY</option><option value="INS (IMMIGRATION &amp; NATURALIZATION)">INS (IMMIGRATION &amp; NATURALIZATION)</option><option value="NEW KENT COUNTY">NEW KENT COUNTY</option><option value="PRINCE GEORGE COUNTY">PRINCE GEORGE COUNTY</option><option value="SURRY COUNTY">SURRY COUNTY</option>
     </select>
   </div>
   <div class="filter-group">
@@ -240,12 +297,12 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 </div>
 
 <div id="main">
-      <div id="loading-overlay"><div class="spin"></div><div class="loading-text">Loading records…</div></div>
+  <div id="loading-overlay"><div class="spin"></div><div class="loading-text">Loading records…</div></div>
   <div id="left-panel">
+    <div id="mugshot-wrap"><img id="mugshot" alt="Mugshot"></div>
     <div id="id-info"></div>
   </div>
   <div id="center-panel">
-    <div id="mugshot-wrap"><img id="mugshot" alt="Mugshot"></div>
     <div class="panel-title" id="charges-title">Charges &amp; Bond</div>
     <div id="charges-section"></div>
   </div>
@@ -253,13 +310,52 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
     <div class="panel-title" id="court-title">Virginia Court History</div>
     <div id="court-section"></div>
   </div>
+  <div id="ad-panel">
+    <div class="ad-panel-title">⚖ Legal Resources</div>
+    <div class="ad-unit ad-bail">
+      <div class="ad-tag">🚨 Bail &amp; Bond</div>
+      <div class="ad-headline">How to Get Someone Released from Riverside Regional Jail Tonight</div>
+      <div class="ad-body">Immediate bail assistance available 24/7. A local bondsman can have your loved one home in hours.</div>
+      <a class="ad-cta" href="tel:8048355127">📞 Call the Bond Hotline</a>
+    </div>
+    <div class="ad-unit ad-attorney">
+      <div class="ad-tag">⚡ Speak Now</div>
+      <div class="ad-headline">Talk to a Virginia Criminal Defense Attorney Right Now — No Hold, No Voicemail</div>
+      <div class="ad-body">Real attorneys. Available 24/7. Free initial call. The sooner you call, the better your options.</div>
+      <a class="ad-cta" href="tel:8048355127">📞 Speak with an Attorney</a>
+    </div>
+    <div class="ad-unit ad-removal">
+      <div class="ad-tag">🔍 Mugshot Removal</div>
+      <div class="ad-headline">Mugshot Appearing on Google? Here's How to Get It Removed</div>
+      <div class="ad-body">Arrest records and mugshots can often be scrubbed from public search results. Find out if you qualify — free review.</div>
+      <a class="ad-cta" href="https://VanHardenbergh.com">Get a Free Removal Review →</a>
+    </div>
+    <div class="ad-unit ad-case">
+      <div class="ad-tag">📋 Free Consultation</div>
+      <div class="ad-headline">How Strong Is the Case Against You in Virginia?</div>
+      <div class="ad-body">A criminal defense attorney will review your charges for free — completely confidential, no obligation.</div>
+      <a class="ad-cta" href="tel:8048355127">Get a Free Case Review</a>
+    </div>
+    <div class="ad-unit ad-win">
+      <div class="ad-tag">🏆 Defense Strategy</div>
+      <div class="ad-headline">How Criminal Cases in Virginia Are Actually Won</div>
+      <div class="ad-body">Most people facing charges don't know these defense strategies exist. Read the free guide from our attorneys.</div>
+      <a class="ad-cta" href="https://VanHardenbergh.com">Read the Free Guide →</a>
+    </div>
+    <div class="ad-unit ad-nobond">
+      <div class="ad-tag">💰 Can't Afford Bail?</div>
+      <div class="ad-headline">Can't Make Bail? These Options Could Get Your Loved One Home Today</div>
+      <div class="ad-body">Bond reduction hearings, personal recognizance petitions, and other options — explained free by a local attorney.</div>
+      <a class="ad-cta" href="https://VanHardenbergh.com">See Your Options →</a>
+    </div>
+    <div class="ad-disclaimer">Sponsored · Charles V. Hardenbergh PC · (804) 835-5127 · Attorney advertising. Results may vary.</div>
+  </div>
 </div>
+
 <div id="loading-bar" style="width:0%"></div>
 
 <script>
 let RECORDS = [];
-
-// ── Load data.json then start the app ────────────────────────────────────
 (function loadData() {
   const bar = document.getElementById('loading-bar');
   const overlay = document.getElementById('loading-overlay');
@@ -269,23 +365,17 @@ let RECORDS = [];
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(data => { RECORDS = data; bar.style.width = '100%'; applyFilters(); preloadBlobs(); });
   }
-  // Step 1: latest.json (~1 record, served from SW cache instantly on repeat visits)
   fetch('latest.json?v=' + Date.now())
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(d => { RECORDS = d; bar.style.width = '10%'; applyFilters(); if (overlay) overlay.classList.add('hidden'); })
     .catch(() => {})
-  // Step 2: recent.json (100 records)
     .then(() => fetch('recent.json?v=' + Date.now()))
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(d => { RECORDS = d; bar.style.width = '30%'; applyFilters(); if (overlay) overlay.classList.add('hidden'); })
     .catch(() => {})
-  // Step 3: full data
     .then(() => fetchFull())
     .catch(err => { bar.style.background = '#da3633'; console.error('Load failed:', err); });
 })();
-
-
-// Preload mugshots as blob URLs
 const mugshotURLs = {};
 function preloadBlobs() {
   let i = 0;
@@ -314,22 +404,18 @@ function preloadBlobs() {
   }
   next();
 }
-
-// --- Filter state ---
-let filteredIndices = RECORDS.map((_, i) => i); // all by default
-let filteredPos = 0; // position within filteredIndices
+let filteredIndices = RECORDS.map((_, i) => i);
+let filteredPos = 0;
 let filtersOpen = false;
-
 function applyFilters() {
-  const sex = document.getElementById('f-sex').value;
-  const race = document.getElementById('f-race').value;
-  const county = document.getElementById('f-county').value;
+  const sex     = document.getElementById('f-sex').value;
+  const race    = document.getElementById('f-race').value;
+  const county  = document.getElementById('f-county').value;
   const custody = document.getElementById('f-custody').value;
-  const grade = document.getElementById('f-grade').value;
+  const grade   = document.getElementById('f-grade').value;
   const chargeKw = document.getElementById('f-charge').value.trim().toUpperCase();
-  const court = document.getElementById('f-court').value;
-  const disp = document.getElementById('f-disp').value;
-
+  const court   = document.getElementById('f-court').value;
+  const disp    = document.getElementById('f-disp').value;
   filteredIndices = [];
   for (let i = 0; i < RECORDS.length; i++) {
     const r = RECORDS[i];
@@ -345,10 +431,7 @@ function applyFilters() {
     if (disp && !r.courtHistory.some(c => c.dispositionDesc === disp)) continue;
     filteredIndices.push(i);
   }
-
   filteredPos = 0;
-
-  // Update active filter badges
   const active = [];
   if (sex) active.push(sex === 'M' ? 'Male' : 'Female');
   if (race) active.push(race.split(' ')[0]);
@@ -358,38 +441,24 @@ function applyFilters() {
   if (chargeKw) active.push('Charge: ' + chargeKw);
   if (court) active.push(court === 'yes' ? 'Has Court Records' : 'No Court Records');
   if (disp) active.push('Disp: ' + disp);
-
   const afEl = document.getElementById('active-filters');
   afEl.innerHTML = active.map(a => '<span>' + a + '</span>').join('');
-
   const countEl = document.getElementById('filter-count');
   const btn = document.getElementById('filter-toggle');
-  if (active.length > 0) {
-    countEl.textContent = ' (' + active.length + ')';
-    btn.classList.add('active-filter');
-  } else {
-    countEl.textContent = '';
-    btn.classList.remove('active-filter');
-  }
-
-  if (filteredIndices.length > 0) {
-    render();
-  } else {
-    document.getElementById('counter').innerHTML = '<span style="color:#ff7b72">No matches</span>';
-  }
+  if (active.length > 0) { countEl.textContent = ' (' + active.length + ')'; btn.classList.add('active-filter'); }
+  else { countEl.textContent = ''; btn.classList.remove('active-filter'); }
+  if (filteredIndices.length > 0) { render(); }
+  else { document.getElementById('counter').innerHTML = '<span style="color:#ff7b72">No matches</span>'; }
 }
-
 function clearFilters() {
   ['f-sex','f-race','f-county','f-custody','f-grade','f-court','f-disp'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-charge').value = '';
   applyFilters();
 }
-
 function toggleFilters() {
   filtersOpen = !filtersOpen;
   document.getElementById('filter-bar').classList.toggle('open', filtersOpen);
 }
-
 function dispTagClass(d) {
   if (!d) return 'tag-other';
   if ((d.includes('Guilty') || d === 'GP') && !d.includes('Not')) return 'tag-guilty';
@@ -398,82 +467,52 @@ function dispTagClass(d) {
   if (d === 'Nolle Pros') return 'tag-nolle';
   return 'tag-other';
 }
-
 function gradeClass(g) {
   if (g === 'A FELONY') return 'grade-felony-a';
   if (g === 'B FELONY') return 'grade-felony-b';
   if (g === 'MISDEMEANOR') return 'grade-misd';
   return 'grade-civil';
 }
-
 function highlight(text, kw) {
   if (!kw) return text;
   const idx = text.toUpperCase().indexOf(kw);
   if (idx < 0) return text;
   return text.slice(0, idx) + '<span class="hl">' + text.slice(idx, idx + kw.length) + '</span>' + text.slice(idx + kw.length);
 }
-
 function normalizeName(n) {
-      if (!n) return '';
-      return n.toUpperCase().replace(/\b(JR|SR|II|III|IV|V)\b\.?/g, '').replace(/\s+/g, ' ').trim();
-    }
-
-    function render() {
+  if (!n) return '';
+  return n.toUpperCase().replace(/\b(JR|SR|II|III|IV|V)\b\.?/g, '').replace(/\s+/g, ' ').trim();
+}
+function render() {
   if (filteredIndices.length === 0) return;
   const idx = filteredIndices[filteredPos];
   const rec = RECORDS[idx];
   const chargeKw = document.getElementById('f-charge').value.trim().toUpperCase();
-
-  // Mugshot
   const img = document.getElementById('mugshot');
-  img.src = mugshotURLs[rec.bookingNum] || rec.mugshot ||
-    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="210" height="210"><rect width="210" height="210" fill="%230d1117"/><rect x="55" y="75" width="100" height="72" rx="8" fill="none" stroke="%238b949e" stroke-width="3"/><circle cx="105" cy="111" r="22" fill="none" stroke="%238b949e" stroke-width="3"/><rect x="88" y="65" width="34" height="12" rx="4" fill="%238b949e"/><text x="105" y="170" text-anchor="middle" fill="%238b949e" font-size="13">Photo Uploading...</text></svg>';
-
-  // ID panel
+  img.src = mugshotURLs[rec.bookingNum] || rec.mugshot || '';
   document.getElementById('id-info').innerHTML = `
     <div class="id-row"><div class="id-label">Name</div><div class="id-value name">${rec.name}</div></div>
     <div class="id-row"><div class="id-label">Booking #</div><div class="id-value">${rec.bookingNum}</div></div>
     <div class="id-row"><div class="id-label">DOB</div><div class="id-value">${rec.dob}</div></div>
     <div class="id-row"><div class="id-label">Sex / Race</div><div class="id-value">${[rec.sex, rec.race].filter(Boolean).join(' / ') || '—'}</div></div>
     <div class="id-row"><div class="id-label">Booked</div><div class="id-value">${rec.commitmentDate || '—'}</div></div>
-    <div class="id-row"><div class="id-label">Status</div><div class="id-value">${rec.releaseDate
-      ? '<span class="badge badge-released">Released ' + rec.releaseDate + '</span>'
-      : '<span class="badge badge-held">IN CUSTODY</span>'}</div></div>
+    <div class="id-row"><div class="id-label">Status</div><div class="id-value">${rec.releaseDate ? '<span class="badge badge-released">Released ' + rec.releaseDate + '</span>' : '<span class="badge badge-held">IN CUSTODY</span>'}</div></div>
     <div class="id-row"><div class="id-label">County</div><div class="id-value">${rec.county || '—'}</div></div>
   `;
-
-  // Charges
   const chargeCount = rec.charges ? rec.charges.length : 0;
   document.getElementById('charges-title').textContent = `Charges & Bond (${chargeCount} charge${chargeCount !== 1 ? 's' : ''})`;
   let chargeHTML = '';
   if (chargeCount > 0) {
     chargeHTML = rec.charges.map(c => {
       const desc = chargeKw ? highlight(c.description || '—', chargeKw) : (c.description || '—');
-      return `<div class="charge-card">
-        <div class="charge-desc">${desc}</div>
-        <div class="charge-meta">
-          ${c.code ? `<span>${c.code}</span>` : ''}
-          ${c.grade ? `<span class="${gradeClass(c.grade)}">${c.grade}</span>` : ''}
-          ${c.degree ? `<span>${c.degree}</span>` : ''}
-          ${c.offenseDate ? `<span>Offense: ${c.offenseDate}</span>` : ''}
-        </div>
-      </div>`;
+      return `<div class="charge-card"><div class="charge-desc">${desc}</div><div class="charge-meta">${c.code ? `<span>${c.code}</span>` : ''}${c.grade ? `<span class="${gradeClass(c.grade)}">${c.grade}</span>` : ''}${c.degree ? `<span>${c.degree}</span>` : ''}${c.offenseDate ? `<span>Offense: ${c.offenseDate}</span>` : ''}</div></div>`;
     }).join('');
-  } else {
-    chargeHTML = '<div class="empty-msg">No charge details on file.</div>';
-  }
-
+  } else { chargeHTML = '<div class="empty-msg">No charge details on file.</div>'; }
   if (rec.bonds && rec.bonds.length > 0) {
     chargeHTML += '<div class="bond-section-title">Bond Information</div>';
-    chargeHTML += rec.bonds.map(b => `<div class="bond-card">
-      <span class="bond-type">${b.bondType || 'Bond'}</span>
-      ${b.amount && b.amount !== '$0.00' ? `<span class="bond-amount">${b.amount}</span>` : ''}
-      ${b.status ? `<span style="color:#8b949e">${b.status}</span>` : ''}
-    </div>`).join('');
+    chargeHTML += rec.bonds.map(b => `<div class="bond-card"><span class="bond-type">${b.bondType || 'Bond'}</span>${b.amount && b.amount !== '$0.00' ? `<span class="bond-amount">${b.amount}</span>` : ''}${b.status ? `<span style="color:#8b949e">${b.status}</span>` : ''}</div>`).join('');
   }
   document.getElementById('charges-section').innerHTML = chargeHTML;
-
-  // Court history
   const caseCount = rec.courtHistory ? rec.courtHistory.length : 0;
   document.getElementById('court-title').textContent = `Virginia Court History (${caseCount} case${caseCount !== 1 ? 's' : ''})`;
   if (caseCount === 0) {
@@ -482,53 +521,29 @@ function normalizeName(n) {
     const filterDisp = document.getElementById('f-disp').value;
     document.getElementById('court-section').innerHTML = rec.courtHistory.map(c => {
       const isMatch = filterDisp && c.dispositionDesc === filterDisp;
-          const exactNameMatch = !c.defendantName || normalizeName(c.defendantName) === normalizeName(rec.name);
-      return `<div class="case-card" style="${isMatch ? 'border-color:#e3b341;' : ''}">
-        <div class="case-num">${c.formattedCaseNum || c.caseTrackingID}</div>
-    ${!exactNameMatch ? `<div class="case-defendant">Court name: ${c.defendantName}</div>` : ''}
-        <div class="case-charge">${c.chargeDesc || '—'}</div>
-        ${c.codeSection ? `<div class="case-code">§ ${c.codeSection}</div>` : ''}
-        <div class="case-tags">
-          <span class="tag tag-court">${c.court || 'Court'}</span>
-      ${!exactNameMatch ? `<span class="tag tag-related">⚠ Potentially Related</span>` : ''}
-          ${c.dispositionDesc ? `<span class="tag ${dispTagClass(c.dispositionDesc)}">${c.dispositionDesc}</span>` : ''}
-          ${c.offenseDate ? `<span class="tag tag-date">Offense: ${c.offenseDate}</span>` : ''}
-          ${c.dispositionDate ? `<span class="tag tag-date">Disposed: ${c.dispositionDate}</span>` : ''}
-          ${c.sentence ? `<span class="tag tag-sentence">Sentence: ${c.sentence}</span>` : ''}
-        </div>
-      </div>`;
+      const exactNameMatch = !c.defendantName || normalizeName(c.defendantName) === normalizeName(rec.name);
+      return `<div class="case-card" style="${isMatch ? 'border-color:#e3b341;' : ''}"><div class="case-num">${c.formattedCaseNum || c.caseTrackingID}</div>${!exactNameMatch ? `<div class="case-defendant">Court name: ${c.defendantName}</div>` : ''}<div class="case-charge">${c.chargeDesc || '—'}</div>${c.codeSection ? `<div class="case-code">§ ${c.codeSection}</div>` : ''}<div class="case-tags"><span class="tag tag-court">${c.court || 'Court'}</span>${!exactNameMatch ? '<span class="tag tag-related">⚠ Potentially Related</span>' : ''}${c.dispositionDesc ? `<span class="tag ${dispTagClass(c.dispositionDesc)}">${c.dispositionDesc}</span>` : ''}${c.offenseDate ? `<span class="tag tag-date">Offense: ${c.offenseDate}</span>` : ''}${c.dispositionDate ? `<span class="tag tag-date">Disposed: ${c.dispositionDate}</span>` : ''}${c.sentence ? `<span class="tag tag-sentence">Sentence: ${c.sentence}</span>` : ''}</div></div>`;
     }).join('');
   }
-
-  // Counter
   const total = filteredIndices.length;
   const isFiltered = total < RECORDS.length;
   document.getElementById('counter').innerHTML = isFiltered
     ? `<span class="filtered-count">${filteredPos + 1} of ${total} filtered</span> (of ${RECORDS.length} total)`
     : `Record ${filteredPos + 1} of ${RECORDS.length}`;
 }
-
-function prev() {
-  if (filteredPos > 0) { filteredPos--; render(); }
-}
-function next() {
-  if (filteredPos < filteredIndices.length - 1) { filteredPos++; render(); }
-}
-
+function prev() { if (filteredPos > 0) { filteredPos--; render(); } }
+function next() { if (filteredPos < filteredIndices.length - 1) { filteredPos++; render(); } }
 function doJump() {
   const v = parseInt(document.getElementById('jump-input').value);
   if (v >= 1 && v <= filteredIndices.length) { filteredPos = v - 1; render(); }
   document.getElementById('jump-input').value = '';
 }
-
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
   if (e.key === 'ArrowLeft') prev();
   if (e.key === 'ArrowRight') next();
 });
 document.getElementById('jump-input').addEventListener('keydown', e => { if (e.key === 'Enter') doJump(); });
-
-// Name search dropdown
 const searchInput = document.getElementById('search-input');
 const searchResults = document.getElementById('search-results');
 searchInput.addEventListener('input', () => {
@@ -541,30 +556,16 @@ searchInput.addEventListener('input', () => {
   if (matches.length === 0) { searchResults.style.display = 'none'; return; }
   searchResults.innerHTML = matches.map(({r, i}) => {
     const pos = filteredIndices.indexOf(i);
-    return `<div class="search-item" onclick="goTo(${pos})">
-      <div class="sname">${r.name}</div>
-      <div class="smeta">${r.bookingNum} · ${r.dob} · ${r.sex || ''} · ${r.county || ''}${r.courtHistory.length > 0 ? ' · ' + r.courtHistory.length + ' court records' : ''}</div>
-    </div>`;
+    return `<div class="search-item" onclick="goTo(${pos})"><div class="sname">${r.name}</div><div class="smeta">${r.bookingNum} · ${r.dob} · ${r.sex || ''} · ${r.county || ''}${r.courtHistory.length > 0 ? ' · ' + r.courtHistory.length + ' court records' : ''}</div></div>`;
   }).join('');
   searchResults.style.display = 'block';
 });
-
-function goTo(pos) {
-  filteredPos = pos;
-  render();
-  searchResults.style.display = 'none';
-  searchInput.value = '';
-}
-
+function goTo(pos) { filteredPos = pos; render(); searchResults.style.display = 'none'; searchInput.value = ''; }
 document.addEventListener('click', e => {
-  if (!searchInput.contains(e.target) && !searchResults.contains(e.target))
-    searchResults.style.display = 'none';
+  if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) searchResults.style.display = 'none';
 });
-
-// Service worker
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(() => {}); }
-    // Init
-    render();
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(() => {}); }
+render();
 </script>
 </body>
 </html>

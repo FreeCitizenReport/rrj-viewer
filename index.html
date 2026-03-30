@@ -95,6 +95,7 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 #loading-bar { position: fixed; bottom: 0; left: 0; height: 3px; background: #1f6feb; z-index: 300; transition: width 0.2s; }
 /* Highlight for filter matches */
 .hl { background: #332200; border-radius: 3px; padding: 0 2px; color: #e3b341; font-weight: 700; }
+/* ── RESPONSIVE / MOBILE ───────────────────────────────── */
 @media (max-width: 768px) {
   body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
   #header { flex-wrap: wrap; padding: 8px 10px; gap: 6px; }
@@ -111,101 +112,203 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
   #charges-section { overflow-y: visible; height: auto; }
   #right-panel { width: 100%; flex: none; height: auto; overflow: visible; }
   #court-section { overflow-y: visible; height: auto; }
-  #ad-panel { width: 100%; border-left: none; border-top: 1px solid #30363d; flex-direction: column; overflow-y: visible; padding: 12px; }
+  #ad-panel { width: 100%; border-left: none; border-top: 1px solid #dadce0; flex-direction: column; overflow-y: visible; padding: 12px; background: #f8f9fa; }
 }
+/* DISCLAIMER */
 #disclaimer { background: #1c2128; border-bottom: 1px solid #30363d; padding: 5px 14px; text-align: center; font-size: 11px; color: #8b949e; flex-shrink: 0; letter-spacing: 0.3px; }
+/* LOADING OVERLAY */
 #main { position: relative; }
 #loading-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; z-index: 10; gap: 14px; }
 #loading-overlay.hidden { display: none; }
 .spin { width: 36px; height: 36px; border: 3px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: spin-anim 0.8s linear infinite; }
 @keyframes spin-anim { to { transform: rotate(360deg); } }
 .loading-text { color: #8b949e; font-size: 13px; }
+/* MUGSHOT — hide broken/empty src */
 #mugshot[src=""], #mugshot:not([src]) { visibility: hidden; }
+
+/* ══════════════════════════════════════
+   AD SIDEBAR
+══════════════════════════════════════ */
 #ad-panel {
-  width: 230px;
+  width: 280px;
   flex-shrink: 0;
-  background: #0d1117;
-  border-left: 1px solid #30363d;
+  background: #f8f9fa;
+  border-left: 1px solid #dadce0;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   padding: 10px 8px;
   gap: 10px;
 }
-.ad-panel-title {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: #6e7681;
-  text-align: center;
-  padding-bottom: 7px;
-  border-bottom: 1px solid #30363d;
-}
-.ad-unit {
+
+/* ── FORMAT 1: Google-style text ad ── */
+.g-text-ad {
+  background: #fff;
+  border: 1px solid #dadce0;
   border-radius: 8px;
-  padding: 10px 11px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  border: 1px solid #30363d;
+  padding: 12px 14px;
+  font-family: Arial, sans-serif;
 }
-.ad-tag {
-  font-size: 9px;
+.g-sponsored {
+  font-size: 10px;
+  color: #188038;
   font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 1px;
 }
-.ad-headline {
+.g-url {
   font-size: 12px;
-  font-weight: 700;
-  color: #f0f6fc;
-  line-height: 1.4;
+  color: #202124;
+  margin-bottom: 3px;
 }
-.ad-body {
-  font-size: 11px;
-  color: #8b949e;
-  line-height: 1.45;
-}
-.ad-cta {
+.g-headline {
   display: block;
-  text-align: center;
-  padding: 7px 10px;
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 16px;
+  color: #1a0dab;
+  font-weight: 400;
+  line-height: 1.3;
   text-decoration: none;
-  margin-top: 3px;
-  transition: opacity 0.15s;
+  margin-bottom: 5px;
   cursor: pointer;
 }
-.ad-cta:hover { opacity: 0.82; }
+.g-headline:hover { text-decoration: underline; }
+.g-desc {
+  font-size: 12px;
+  color: #4d5156;
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+.g-sitelinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0;
+}
+.g-sitelinks span {
+  font-size: 12px;
+  color: #1a0dab;
+  padding-right: 10px;
+  margin-right: 10px;
+  border-right: 1px solid #dadce0;
+  cursor: pointer;
+  line-height: 1.8;
+}
+.g-sitelinks span:last-child { border-right: none; }
+.g-sitelinks span:hover { text-decoration: underline; }
+
+/* ── FORMAT 2: Display card with photo ── */
+.g-display-card {
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.10);
+  font-family: Arial, sans-serif;
+}
+.g-card-img {
+  position: relative;
+  height: 148px;
+  overflow: hidden;
+}
+.g-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+.g-card-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #da3633;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: .05em;
+}
+.g-card-body {
+  padding: 11px 12px 10px;
+}
+.g-card-label {
+  font-size: 10px;
+  color: #188038;
+  font-weight: 700;
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+.g-card-headline {
+  font-size: 14px;
+  font-weight: 700;
+  color: #202124;
+  line-height: 1.3;
+  margin-bottom: 5px;
+}
+.g-card-desc {
+  font-size: 12px;
+  color: #5f6368;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+.g-card-cta {
+  display: block;
+  background: #1a73e8;
+  color: #fff;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.g-card-cta:hover { opacity: .88; }
+.g-card-footer {
+  padding: 5px 12px 7px;
+  font-size: 9px;
+  color: #9aa0a6;
+  border-top: 1px solid #f1f3f4;
+}
+
+/* ── Call strip ── */
+.g-call-strip {
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: Arial, sans-serif;
+}
+.g-call-icon { font-size: 22px; flex-shrink: 0; }
+.g-call-info { flex: 1; min-width: 0; }
+.g-call-label { font-size: 9px; color: #188038; font-weight: 700; letter-spacing: .04em; }
+.g-call-headline { font-size: 12px; font-weight: 700; color: #202124; line-height: 1.3; }
+.g-call-btn {
+  background: #1a73e8;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.g-call-btn:hover { background: #1558b0; }
+
 .ad-disclaimer {
   font-size: 9px;
-  color: #6e7681;
+  color: #9aa0a6;
   text-align: center;
-  padding: 6px 2px 2px;
+  padding: 4px 2px;
   line-height: 1.5;
-  border-top: 1px solid #30363d;
+  border-top: 1px solid #dadce0;
   margin-top: 2px;
+  font-family: Arial, sans-serif;
 }
-.ad-bail    { background: #160c0c; border-color: #6e1515; }
-.ad-bail .ad-tag { color: #ff7b72; }
-.ad-bail .ad-cta { background: #da3633; color: #fff; }
-.ad-attorney { background: #120d1e; border-color: #3a1f6e; }
-.ad-attorney .ad-tag { color: #d2a8ff; }
-.ad-attorney .ad-cta { background: #6e40c9; color: #fff; }
-.ad-removal { background: #0a1420; border-color: #1f4070; }
-.ad-removal .ad-tag { color: #79c0ff; }
-.ad-removal .ad-cta { background: #1f6feb; color: #fff; }
-.ad-case    { background: #0a160a; border-color: #1a4a1a; }
-.ad-case .ad-tag { color: #3fb950; }
-.ad-case .ad-cta { background: #238636; color: #fff; }
-.ad-win     { background: #181400; border-color: #4a3e00; }
-.ad-win .ad-tag { color: #e3b341; }
-.ad-win .ad-cta { background: #9e6a03; color: #fff; }
-.ad-nobond  { background: #0a1a1c; border-color: #1a3e45; }
-.ad-nobond .ad-tag { color: #39d3d3; }
-.ad-nobond .ad-cta { background: #138a85; color: #fff; }
 </style>
 </head>
 <body>
@@ -252,7 +355,7 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
     <div class="filter-label">County / Jurisdiction</div>
     <select id="f-county" onchange="applyFilters()">
       <option value="">All</option>
-      <option value="BLAND COUNTY">BLAND COUNTY</option><option value="BRUNSWICK COUNTY">BRUNSWICK COUNTY</option><option value="BUCKINGHAM COUNTY">BUCKINGHAM COUNTY</option><option value="CHARLES CITY COUNTY">CHARLES CITY COUNTY</option><option value="CHESTERFIELD COUNTY">CHESTERFIELD COUNTY</option><option value="CITY OF COLONIAL HEIGHTS">CITY OF COLONIAL HEIGHTS</option><option value="CITY OF HAMPTON">CITY OF HAMPTON</option><option value="CITY OF HOPEWELL">CITY OF HOPEWELL</option><option value="CITY OF PETERSBURG">CITY OF PETERSBURG</option><option value="CITY OF PORTSMOUTH">CITY OF PORTSMOUTH</option><option value="CITY OF RICHMOND">CITY OF RICHMOND</option><option value="CITY OF ROANOKE">CITY OF ROANOKE</option><option value="CITY OF VIRGINIA BEACH">CITY OF VIRGINIA BEACH</option><option value="FAIRFAX COUNTY">FAIRFAX COUNTY</option><option value="FED. BUREAU OF PRISONS (DETENTION)">FED. BUREAU OF PRISONS (DETENTION)</option><option value="GILES COUNTY">GILES COUNTY</option><option value="INS (IMMIGRATION &amp; NATURALIZATION)">INS (IMMIGRATION &amp; NATURALIZATION)</option><option value="NEW KENT COUNTY">NEW KENT COUNTY</option><option value="PRINCE GEORGE COUNTY">PRINCE GEORGE COUNTY</option><option value="SURRY COUNTY">SURRY COUNTY</option>
+      <option value="BLAND COUNTY">BLAND COUNTY</option><option value="BRUNSWICK COUNTY">BRUNSWICK COUNTY</option><option value="BUCKINGHAM COUNTY">BUCKINGHAM COUNTY</option><option value="CHARLES CITY COUNTY">CHARLES CITY COUNTY</option><option value="CHESTERFIELD COUNTY">CHESTERFIELD COUNTY</option><option value="CITY OF COLONIAL HEIGHTS">CITY OF COLONIAL HEIGHTS</option><option value="CITY OF HAMPTON">CITY OF HAMPTON</option><option value="CITY OF HOPEWELL">CITY OF HOPEWELL</option><option value="CITY OF PETERSBURG">CITY OF PETERSBURG</option><option value="CITY OF PORTSMOUTH">CITY OF PORTSMOUTH</option><option value="CITY OF RICHMOND">CITY OF RICHMOND</option><option value="CITY OF ROANOKE">CITY OF ROANOKE</option><option value="CITY OF VIRGINIA BEACH">CITY OF VIRGINIA BEACH</option><option value="FAIRFAX COUNTY">FAIRFAX COUNTY</option><option value="FED. BUREAU OF PRISONS (DETENTION)">FED. BUREAU OF PRISONS (DETENTION)</option><option value="GILES COUNTY">GILES COUNTY</option><option value="INS (IMMIGRATION & NATURALIZATION)">INS (IMMIGRATION & NATURALIZATION)</option><option value="NEW KENT COUNTY">NEW KENT COUNTY</option><option value="PRINCE GEORGE COUNTY">PRINCE GEORGE COUNTY</option><option value="SURRY COUNTY">SURRY COUNTY</option>
     </select>
   </div>
   <div class="filter-group">
@@ -298,58 +401,87 @@ select:focus, .filter-text:focus { outline: none; border-color: #1f6feb; }
 
 <div id="main">
   <div id="loading-overlay"><div class="spin"></div><div class="loading-text">Loading records…</div></div>
+
+  <!-- LEFT: Mugshot + inmate info -->
   <div id="left-panel">
     <div id="mugshot-wrap"><img id="mugshot" alt="Mugshot"></div>
     <div id="id-info"></div>
   </div>
+
+  <!-- CENTER: Charges & bond -->
   <div id="center-panel">
     <div class="panel-title" id="charges-title">Charges &amp; Bond</div>
     <div id="charges-section"></div>
   </div>
+
+  <!-- RIGHT: Court history -->
   <div id="right-panel">
     <div class="panel-title" id="court-title">Virginia Court History</div>
     <div id="court-section"></div>
   </div>
+
+  <!-- ══════════════════════════════════════
+       AD SIDEBAR
+  ══════════════════════════════════════ -->
   <div id="ad-panel">
-    <div class="ad-panel-title">⚖ Legal Resources</div>
-    <div class="ad-unit ad-bail">
-      <div class="ad-tag">🚨 Bail &amp; Bond</div>
-      <div class="ad-headline">How to Get Someone Released from Riverside Regional Jail Tonight</div>
-      <div class="ad-body">Immediate bail assistance available 24/7. A local bondsman can have your loved one home in hours.</div>
-      <a class="ad-cta" href="tel:8048355127">📞 Call the Bond Hotline</a>
+
+    <!-- FORMAT 1: Google-style text ad -->
+    <div class="g-text-ad">
+      <div class="g-sponsored">Sponsored</div>
+      <div class="g-url">vanhardenbergh.com ›</div>
+      <a class="g-headline" href="tel:8048355127">Get Someone Released from Riverside Regional Jail — Call Now</a>
+      <div class="g-desc">Arrested in Prince George County? We help families navigate bail and build a defense fast. Attorney answers 24/7 — not a machine.</div>
+      <div class="g-sitelinks">
+        <span>Free Case Review</span>
+        <span>How Bail Works</span>
+        <span>Our Results</span>
+      </div>
     </div>
-    <div class="ad-unit ad-attorney">
-      <div class="ad-tag">⚡ Speak Now</div>
-      <div class="ad-headline">Talk to a Virginia Criminal Defense Attorney Right Now — No Hold, No Voicemail</div>
-      <div class="ad-body">Real attorneys. Available 24/7. Free initial call. The sooner you call, the better your options.</div>
-      <a class="ad-cta" href="tel:8048355127">📞 Speak with an Attorney</a>
+
+    <!-- FORMAT 2: Display card 1 — bail / release -->
+    <div class="g-display-card">
+      <div class="g-card-img">
+        <img src="data:image/jpeg;base64,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" alt="Attorney Charles V. Hardenbergh">
+        <div class="g-card-badge">24/7</div>
+      </div>
+      <div class="g-card-body">
+        <div class="g-card-label">Ad · VanHardenbergh.com</div>
+        <div class="g-card-headline">Someone You Love Was Just Arrested. Here&#39;s What to Do Right Now.</div>
+        <div class="g-card-desc">Every hour matters. Get an experienced Virginia attorney on the phone before arraignment. Free emergency consultation.</div>
+        <a class="g-card-cta" href="tel:8048355127">&#128222; Call (804) 835-5127</a>
+      </div>
+      <div class="g-card-footer">Charles V. Hardenbergh PC &middot; Attorney Advertising</div>
     </div>
-    <div class="ad-unit ad-removal">
-      <div class="ad-tag">🔍 Mugshot Removal</div>
-      <div class="ad-headline">Mugshot Appearing on Google? Here's How to Get It Removed</div>
-      <div class="ad-body">Arrest records and mugshots can often be scrubbed from public search results. Find out if you qualify — free review.</div>
-      <a class="ad-cta" href="https://VanHardenbergh.com">Get a Free Removal Review →</a>
+
+    <!-- FORMAT 2: Display card 2 — defense strategy -->
+    <div class="g-display-card">
+      <div class="g-card-img">
+        <img src="data:image/jpeg;base64,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" alt="Attorney Charles V. Hardenbergh">
+        <div class="g-card-badge" style="background:#1a73e8">FREE</div>
+      </div>
+      <div class="g-card-body">
+        <div class="g-card-label">Ad · VanHardenbergh.com</div>
+        <div class="g-card-headline">How to Win a Criminal Case in Riverside County</div>
+        <div class="g-card-desc">Prosecutors make mistakes. Evidence gets suppressed. Know your options before entering any plea. Confidential &mdash; no obligation.</div>
+        <a class="g-card-cta" href="tel:8048355127" style="background:#188038">Free Strategy Call &rarr;</a>
+      </div>
+      <div class="g-card-footer">Charles V. Hardenbergh PC &middot; Attorney Advertising</div>
     </div>
-    <div class="ad-unit ad-case">
-      <div class="ad-tag">📋 Free Consultation</div>
-      <div class="ad-headline">How Strong Is the Case Against You in Virginia?</div>
-      <div class="ad-body">A criminal defense attorney will review your charges for free — completely confidential, no obligation.</div>
-      <a class="ad-cta" href="tel:8048355127">Get a Free Case Review</a>
+
+    <!-- Call strip -->
+    <div class="g-call-strip">
+      <div class="g-call-icon">&#128222;</div>
+      <div class="g-call-info">
+        <div class="g-call-label">Sponsored &middot; Available 24/7</div>
+        <div class="g-call-headline">Speak With an Attorney Right Now</div>
+      </div>
+      <a class="g-call-btn" href="tel:8048355127">(804) 835-5127</a>
     </div>
-    <div class="ad-unit ad-win">
-      <div class="ad-tag">🏆 Defense Strategy</div>
-      <div class="ad-headline">How Criminal Cases in Virginia Are Actually Won</div>
-      <div class="ad-body">Most people facing charges don't know these defense strategies exist. Read the free guide from our attorneys.</div>
-      <a class="ad-cta" href="https://VanHardenbergh.com">Read the Free Guide →</a>
-    </div>
-    <div class="ad-unit ad-nobond">
-      <div class="ad-tag">💰 Can't Afford Bail?</div>
-      <div class="ad-headline">Can't Make Bail? These Options Could Get Your Loved One Home Today</div>
-      <div class="ad-body">Bond reduction hearings, personal recognizance petitions, and other options — explained free by a local attorney.</div>
-      <a class="ad-cta" href="https://VanHardenbergh.com">See Your Options →</a>
-    </div>
-    <div class="ad-disclaimer">Sponsored · Charles V. Hardenbergh PC · (804) 835-5127 · Attorney advertising. Results may vary.</div>
+
+    <div class="ad-disclaimer">Sponsored &middot; Charles V. Hardenbergh PC &middot; (804) 835-5127 &middot; Attorney advertising. Results may vary.</div>
   </div>
+  <!-- ====== END AD SIDEBAR ====== -->
+
 </div>
 
 <div id="loading-bar" style="width:0%"></div>
@@ -381,190 +513,64 @@ function preloadBlobs() {
   let i = 0;
   const bar = document.getElementById('loading-bar');
   function next() {
-    if (i >= RECORDS.length) {
-      bar.style.width = '100%';
-      setTimeout(() => bar.style.display = 'none', 600);
-      applyFilters();
-      document.getElementById('loading-overlay')?.classList.add('hidden');
-      return;
-    }
+    if (i >= RECORDS.length) { bar.style.width = '100%'; setTimeout(() => bar.style.display = 'none', 600); applyFilters(); document.getElementById('loading-overlay')?.classList.add('hidden'); return; }
     const rec = RECORDS[i++];
     bar.style.width = (i / RECORDS.length * 100).toFixed(1) + '%';
     if (rec.mugshot) {
-      try {
-        const arr = rec.mugshot.split(',');
-        const mime = (arr[0].match(/:(.*?);/) || [])[1] || 'image/jpeg';
-        const bin = atob(arr[1]);
-        const bytes = new Uint8Array(bin.length);
-        for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
-        mugshotURLs[rec.bookingNum] = URL.createObjectURL(new Blob([bytes], {type: mime}));
-      } catch(e) {}
+      try { const arr = rec.mugshot.split(','); const mime = (arr[0].match(/:(.*?);/) || [])[1] || 'image/jpeg'; const bin = atob(arr[1]); const bytes = new Uint8Array(bin.length); for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j); mugshotURLs[rec.bookingNum] = URL.createObjectURL(new Blob([bytes], {type: mime})); } catch(e) {}
     }
     if (i % 20 === 0) setTimeout(next, 0); else next();
   }
   next();
 }
-let filteredIndices = RECORDS.map((_, i) => i);
+let filteredIndices = [];
 let filteredPos = 0;
 let filtersOpen = false;
 function applyFilters() {
-  const sex     = document.getElementById('f-sex').value;
-  const race    = document.getElementById('f-race').value;
-  const county  = document.getElementById('f-county').value;
-  const custody = document.getElementById('f-custody').value;
-  const grade   = document.getElementById('f-grade').value;
-  const chargeKw = document.getElementById('f-charge').value.trim().toUpperCase();
-  const court   = document.getElementById('f-court').value;
-  const disp    = document.getElementById('f-disp').value;
-  filteredIndices = [];
-  for (let i = 0; i < RECORDS.length; i++) {
-    const r = RECORDS[i];
-    if (sex && r.sex !== sex) continue;
-    if (race && r.race !== race) continue;
-    if (county && r.county !== county) continue;
-    if (custody === 'held' && r.releaseDate) continue;
-    if (custody === 'released' && !r.releaseDate) continue;
-    if (grade && !r.charges.some(c => c.grade === grade)) continue;
-    if (chargeKw && !r.charges.some(c => (c.description||'').toUpperCase().includes(chargeKw))) continue;
-    if (court === 'yes' && r.courtHistory.length === 0) continue;
-    if (court === 'no' && r.courtHistory.length > 0) continue;
-    if (disp && !r.courtHistory.some(c => c.dispositionDesc === disp)) continue;
-    filteredIndices.push(i);
-  }
-  filteredPos = 0;
-  const active = [];
-  if (sex) active.push(sex === 'M' ? 'Male' : 'Female');
-  if (race) active.push(race.split(' ')[0]);
-  if (county) active.push(county.replace('CITY OF ','').replace(' COUNTY',''));
-  if (custody) active.push(custody === 'held' ? 'In Custody' : 'Released');
-  if (grade) active.push(grade);
-  if (chargeKw) active.push('Charge: ' + chargeKw);
-  if (court) active.push(court === 'yes' ? 'Has Court Records' : 'No Court Records');
-  if (disp) active.push('Disp: ' + disp);
-  const afEl = document.getElementById('active-filters');
-  afEl.innerHTML = active.map(a => '<span>' + a + '</span>').join('');
-  const countEl = document.getElementById('filter-count');
-  const btn = document.getElementById('filter-toggle');
-  if (active.length > 0) { countEl.textContent = ' (' + active.length + ')'; btn.classList.add('active-filter'); }
-  else { countEl.textContent = ''; btn.classList.remove('active-filter'); }
-  if (filteredIndices.length > 0) { render(); }
-  else { document.getElementById('counter').innerHTML = '<span style="color:#ff7b72">No matches</span>'; }
+  const sex=document.getElementById('f-sex').value,race=document.getElementById('f-race').value,county=document.getElementById('f-county').value,custody=document.getElementById('f-custody').value,grade=document.getElementById('f-grade').value,chargeKw=document.getElementById('f-charge').value.trim().toUpperCase(),court=document.getElementById('f-court').value,disp=document.getElementById('f-disp').value;
+  filteredIndices=[];
+  for(let i=0;i<RECORDS.length;i++){const r=RECORDS[i];if(sex&&r.sex!==sex)continue;if(race&&r.race!==race)continue;if(county&&r.county!==county)continue;if(custody==='held'&&r.releaseDate)continue;if(custody==='released'&&!r.releaseDate)continue;if(grade&&!r.charges.some(c=>c.grade===grade))continue;if(chargeKw&&!r.charges.some(c=>(c.description||'').toUpperCase().includes(chargeKw)))continue;if(court==='yes'&&r.courtHistory.length===0)continue;if(court==='no'&&r.courtHistory.length>0)continue;if(disp&&!r.courtHistory.some(c=>c.dispositionDesc===disp))continue;filteredIndices.push(i);}
+  filteredPos=0;
+  const active=[];if(sex)active.push(sex==='M'?'Male':'Female');if(race)active.push(race.split(' ')[0]);if(county)active.push(county.replace('CITY OF ','').replace(' COUNTY',''));if(custody)active.push(custody==='held'?'In Custody':'Released');if(grade)active.push(grade);if(chargeKw)active.push('Charge: '+chargeKw);if(court)active.push(court==='yes'?'Has Court Records':'No Court Records');if(disp)active.push('Disp: '+disp);
+  document.getElementById('active-filters').innerHTML=active.map(a=>'<span>'+a+'</span>').join('');
+  const btn=document.getElementById('filter-toggle');if(active.length>0){document.getElementById('filter-count').textContent=' ('+active.length+')';btn.classList.add('active-filter');}else{document.getElementById('filter-count').textContent='';btn.classList.remove('active-filter');}
+  if(filteredIndices.length>0){render();}else{document.getElementById('counter').innerHTML='<span style="color:#ff7b72">No matches</span>';}
 }
-function clearFilters() {
-  ['f-sex','f-race','f-county','f-custody','f-grade','f-court','f-disp'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f-charge').value = '';
-  applyFilters();
+function clearFilters(){['f-sex','f-race','f-county','f-custody','f-grade','f-court','f-disp'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-charge').value='';applyFilters();}
+function toggleFilters(){filtersOpen=!filtersOpen;document.getElementById('filter-bar').classList.toggle('open',filtersOpen);}
+function dispTagClass(d){if(!d)return 'tag-other';if((d.includes('Guilty')||d==='GP')&&!d.includes('Not'))return 'tag-guilty';if(d.includes('Not Guilty'))return 'tag-ng';if(d==='Dismissed')return 'tag-dismissed';if(d==='Nolle Pros')return 'tag-nolle';return 'tag-other';}
+function gradeClass(g){if(g==='A FELONY')return 'grade-felony-a';if(g==='B FELONY')return 'grade-felony-b';if(g==='MISDEMEANOR')return 'grade-misd';return 'grade-civil';}
+function highlight(text,kw){if(!kw)return text;const idx=text.toUpperCase().indexOf(kw);if(idx<0)return text;return text.slice(0,idx)+'<span class="hl">'+text.slice(idx,idx+kw.length)+'</span>'+text.slice(idx+kw.length);}
+function normalizeName(n){if(!n)return '';return n.toUpperCase().replace(/\b(JR|SR|II|III|IV|V)\b\.?/g,'').replace(/\s+/g,' ').trim();}
+function render(){
+  if(filteredIndices.length===0)return;
+  const idx=filteredIndices[filteredPos],rec=RECORDS[idx],chargeKw=document.getElementById('f-charge').value.trim().toUpperCase();
+  const img=document.getElementById('mugshot');
+  img.src=mugshotURLs[rec.bookingNum]||rec.mugshot||'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="210" height="210"><rect width="210" height="210" fill="%230d1117"/><text x="105" y="115" text-anchor="middle" fill="%238b949e" font-size="13">Photo Uploading...</text></svg>';
+  document.getElementById('id-info').innerHTML=`<div class="id-row"><div class="id-label">Name</div><div class="id-value name">${rec.name}</div></div><div class="id-row"><div class="id-label">Booking #</div><div class="id-value">${rec.bookingNum}</div></div><div class="id-row"><div class="id-label">DOB</div><div class="id-value">${rec.dob}</div></div><div class="id-row"><div class="id-label">Sex / Race</div><div class="id-value">${[rec.sex,rec.race].filter(Boolean).join(' / ')||'\u2014'}</div></div><div class="id-row"><div class="id-label">Booked</div><div class="id-value">${rec.commitmentDate||'\u2014'}</div></div><div class="id-row"><div class="id-label">Status</div><div class="id-value">${rec.releaseDate?'<span class="badge badge-released">Released '+rec.releaseDate+'</span>':'<span class="badge badge-held">IN CUSTODY</span>'}</div></div><div class="id-row"><div class="id-label">County</div><div class="id-value">${rec.county||'\u2014'}</div></div>`;
+  const chargeCount=rec.charges?rec.charges.length:0;
+  document.getElementById('charges-title').textContent=`Charges & Bond (${chargeCount} charge${chargeCount!==1?'s':''})`;
+  let chargeHTML=chargeCount>0?rec.charges.map(c=>{const desc=chargeKw?highlight(c.description||'\u2014',chargeKw):(c.description||'\u2014');return `<div class="charge-card"><div class="charge-desc">${desc}</div><div class="charge-meta">${c.code?`<span>${c.code}</span>`:''} ${c.grade?`<span class="${gradeClass(c.grade)}">${c.grade}</span>`:''} ${c.degree?`<span>${c.degree}</span>`:''} ${c.offenseDate?`<span>Offense: ${c.offenseDate}</span>`:''}</div></div>`;}).join(''):'<div class="empty-msg">No charge details on file.</div>';
+  if(rec.bonds&&rec.bonds.length>0){chargeHTML+='<div class="bond-section-title">Bond Information</div>';chargeHTML+=rec.bonds.map(b=>`<div class="bond-card"><span class="bond-type">${b.bondType||'Bond'}</span>${b.amount&&b.amount!=='$0.00'?`<span class="bond-amount">${b.amount}</span>`:''} ${b.status?`<span style="color:#8b949e">${b.status}</span>`:''}</div>`).join('');}
+  document.getElementById('charges-section').innerHTML=chargeHTML;
+  const caseCount=rec.courtHistory?rec.courtHistory.length:0;
+  document.getElementById('court-title').textContent=`Virginia Court History (${caseCount} case${caseCount!==1?'s':''})`;
+  if(caseCount===0){document.getElementById('court-section').innerHTML='<div class="no-records-msg">No Virginia court records found.</div>';}else{
+    const filterDisp=document.getElementById('f-disp').value;
+    document.getElementById('court-section').innerHTML=rec.courtHistory.map(c=>{const isMatch=filterDisp&&c.dispositionDesc===filterDisp;const exactNameMatch=!c.defendantName||normalizeName(c.defendantName)===normalizeName(rec.name);return `<div class="case-card" style="${isMatch?'border-color:#e3b341;':''}"><div class="case-num">${c.formattedCaseNum||c.caseTrackingID}</div>${!exactNameMatch?`<div class="case-defendant">Court name: ${c.defendantName}</div>`:''}<div class="case-charge">${c.chargeDesc||'\u2014'}</div>${c.codeSection?`<div class="case-code">\u00a7 ${c.codeSection}</div>`:''}<div class="case-tags"><span class="tag tag-court">${c.court||'Court'}</span>${!exactNameMatch?`<span class="tag tag-related">\u26a0 Potentially Related</span>`:''} ${c.dispositionDesc?`<span class="tag ${dispTagClass(c.dispositionDesc)}">${c.dispositionDesc}</span>`:''} ${c.offenseDate?`<span class="tag tag-date">Offense: ${c.offenseDate}</span>`:''} ${c.dispositionDate?`<span class="tag tag-date">Disposed: ${c.dispositionDate}</span>`:''} ${c.sentence?`<span class="tag tag-sentence">Sentence: ${c.sentence}</span>`:''}</div></div>`;}).join('');}
+  const total=filteredIndices.length,isFiltered=total<RECORDS.length;
+  document.getElementById('counter').innerHTML=isFiltered?`<span class="filtered-count">${filteredPos+1} of ${total} filtered</span> (of ${RECORDS.length} total)`:`Record ${filteredPos+1} of ${RECORDS.length}`;
 }
-function toggleFilters() {
-  filtersOpen = !filtersOpen;
-  document.getElementById('filter-bar').classList.toggle('open', filtersOpen);
-}
-function dispTagClass(d) {
-  if (!d) return 'tag-other';
-  if ((d.includes('Guilty') || d === 'GP') && !d.includes('Not')) return 'tag-guilty';
-  if (d.includes('Not Guilty')) return 'tag-ng';
-  if (d === 'Dismissed') return 'tag-dismissed';
-  if (d === 'Nolle Pros') return 'tag-nolle';
-  return 'tag-other';
-}
-function gradeClass(g) {
-  if (g === 'A FELONY') return 'grade-felony-a';
-  if (g === 'B FELONY') return 'grade-felony-b';
-  if (g === 'MISDEMEANOR') return 'grade-misd';
-  return 'grade-civil';
-}
-function highlight(text, kw) {
-  if (!kw) return text;
-  const idx = text.toUpperCase().indexOf(kw);
-  if (idx < 0) return text;
-  return text.slice(0, idx) + '<span class="hl">' + text.slice(idx, idx + kw.length) + '</span>' + text.slice(idx + kw.length);
-}
-function normalizeName(n) {
-  if (!n) return '';
-  return n.toUpperCase().replace(/\b(JR|SR|II|III|IV|V)\b\.?/g, '').replace(/\s+/g, ' ').trim();
-}
-function render() {
-  if (filteredIndices.length === 0) return;
-  const idx = filteredIndices[filteredPos];
-  const rec = RECORDS[idx];
-  const chargeKw = document.getElementById('f-charge').value.trim().toUpperCase();
-  const img = document.getElementById('mugshot');
-  img.src = mugshotURLs[rec.bookingNum] || rec.mugshot || '';
-  document.getElementById('id-info').innerHTML = `
-    <div class="id-row"><div class="id-label">Name</div><div class="id-value name">${rec.name}</div></div>
-    <div class="id-row"><div class="id-label">Booking #</div><div class="id-value">${rec.bookingNum}</div></div>
-    <div class="id-row"><div class="id-label">DOB</div><div class="id-value">${rec.dob}</div></div>
-    <div class="id-row"><div class="id-label">Sex / Race</div><div class="id-value">${[rec.sex, rec.race].filter(Boolean).join(' / ') || '—'}</div></div>
-    <div class="id-row"><div class="id-label">Booked</div><div class="id-value">${rec.commitmentDate || '—'}</div></div>
-    <div class="id-row"><div class="id-label">Status</div><div class="id-value">${rec.releaseDate ? '<span class="badge badge-released">Released ' + rec.releaseDate + '</span>' : '<span class="badge badge-held">IN CUSTODY</span>'}</div></div>
-    <div class="id-row"><div class="id-label">County</div><div class="id-value">${rec.county || '—'}</div></div>
-  `;
-  const chargeCount = rec.charges ? rec.charges.length : 0;
-  document.getElementById('charges-title').textContent = `Charges & Bond (${chargeCount} charge${chargeCount !== 1 ? 's' : ''})`;
-  let chargeHTML = '';
-  if (chargeCount > 0) {
-    chargeHTML = rec.charges.map(c => {
-      const desc = chargeKw ? highlight(c.description || '—', chargeKw) : (c.description || '—');
-      return `<div class="charge-card"><div class="charge-desc">${desc}</div><div class="charge-meta">${c.code ? `<span>${c.code}</span>` : ''}${c.grade ? `<span class="${gradeClass(c.grade)}">${c.grade}</span>` : ''}${c.degree ? `<span>${c.degree}</span>` : ''}${c.offenseDate ? `<span>Offense: ${c.offenseDate}</span>` : ''}</div></div>`;
-    }).join('');
-  } else { chargeHTML = '<div class="empty-msg">No charge details on file.</div>'; }
-  if (rec.bonds && rec.bonds.length > 0) {
-    chargeHTML += '<div class="bond-section-title">Bond Information</div>';
-    chargeHTML += rec.bonds.map(b => `<div class="bond-card"><span class="bond-type">${b.bondType || 'Bond'}</span>${b.amount && b.amount !== '$0.00' ? `<span class="bond-amount">${b.amount}</span>` : ''}${b.status ? `<span style="color:#8b949e">${b.status}</span>` : ''}</div>`).join('');
-  }
-  document.getElementById('charges-section').innerHTML = chargeHTML;
-  const caseCount = rec.courtHistory ? rec.courtHistory.length : 0;
-  document.getElementById('court-title').textContent = `Virginia Court History (${caseCount} case${caseCount !== 1 ? 's' : ''})`;
-  if (caseCount === 0) {
-    document.getElementById('court-section').innerHTML = '<div class="no-records-msg">No Virginia court records found.</div>';
-  } else {
-    const filterDisp = document.getElementById('f-disp').value;
-    document.getElementById('court-section').innerHTML = rec.courtHistory.map(c => {
-      const isMatch = filterDisp && c.dispositionDesc === filterDisp;
-      const exactNameMatch = !c.defendantName || normalizeName(c.defendantName) === normalizeName(rec.name);
-      return `<div class="case-card" style="${isMatch ? 'border-color:#e3b341;' : ''}"><div class="case-num">${c.formattedCaseNum || c.caseTrackingID}</div>${!exactNameMatch ? `<div class="case-defendant">Court name: ${c.defendantName}</div>` : ''}<div class="case-charge">${c.chargeDesc || '—'}</div>${c.codeSection ? `<div class="case-code">§ ${c.codeSection}</div>` : ''}<div class="case-tags"><span class="tag tag-court">${c.court || 'Court'}</span>${!exactNameMatch ? '<span class="tag tag-related">⚠ Potentially Related</span>' : ''}${c.dispositionDesc ? `<span class="tag ${dispTagClass(c.dispositionDesc)}">${c.dispositionDesc}</span>` : ''}${c.offenseDate ? `<span class="tag tag-date">Offense: ${c.offenseDate}</span>` : ''}${c.dispositionDate ? `<span class="tag tag-date">Disposed: ${c.dispositionDate}</span>` : ''}${c.sentence ? `<span class="tag tag-sentence">Sentence: ${c.sentence}</span>` : ''}</div></div>`;
-    }).join('');
-  }
-  const total = filteredIndices.length;
-  const isFiltered = total < RECORDS.length;
-  document.getElementById('counter').innerHTML = isFiltered
-    ? `<span class="filtered-count">${filteredPos + 1} of ${total} filtered</span> (of ${RECORDS.length} total)`
-    : `Record ${filteredPos + 1} of ${RECORDS.length}`;
-}
-function prev() { if (filteredPos > 0) { filteredPos--; render(); } }
-function next() { if (filteredPos < filteredIndices.length - 1) { filteredPos++; render(); } }
-function doJump() {
-  const v = parseInt(document.getElementById('jump-input').value);
-  if (v >= 1 && v <= filteredIndices.length) { filteredPos = v - 1; render(); }
-  document.getElementById('jump-input').value = '';
-}
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-  if (e.key === 'ArrowLeft') prev();
-  if (e.key === 'ArrowRight') next();
-});
-document.getElementById('jump-input').addEventListener('keydown', e => { if (e.key === 'Enter') doJump(); });
-const searchInput = document.getElementById('search-input');
-const searchResults = document.getElementById('search-results');
-searchInput.addEventListener('input', () => {
-  const q = searchInput.value.trim().toUpperCase();
-  if (q.length < 2) { searchResults.style.display = 'none'; return; }
-  const matches = filteredIndices
-    .map(i => ({r: RECORDS[i], i}))
-    .filter(({r}) => r.name.toUpperCase().includes(q))
-    .slice(0, 20);
-  if (matches.length === 0) { searchResults.style.display = 'none'; return; }
-  searchResults.innerHTML = matches.map(({r, i}) => {
-    const pos = filteredIndices.indexOf(i);
-    return `<div class="search-item" onclick="goTo(${pos})"><div class="sname">${r.name}</div><div class="smeta">${r.bookingNum} · ${r.dob} · ${r.sex || ''} · ${r.county || ''}${r.courtHistory.length > 0 ? ' · ' + r.courtHistory.length + ' court records' : ''}</div></div>`;
-  }).join('');
-  searchResults.style.display = 'block';
-});
-function goTo(pos) { filteredPos = pos; render(); searchResults.style.display = 'none'; searchInput.value = ''; }
-document.addEventListener('click', e => {
-  if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) searchResults.style.display = 'none';
-});
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(() => {}); }
+function prev(){if(filteredPos>0){filteredPos--;render();}}
+function next(){if(filteredPos<filteredIndices.length-1){filteredPos++;render();}}
+function doJump(){const v=parseInt(document.getElementById('jump-input').value);if(v>=1&&v<=filteredIndices.length){filteredPos=v-1;render();}document.getElementById('jump-input').value='';}
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;if(e.key==='ArrowLeft')prev();if(e.key==='ArrowRight')next();});
+document.getElementById('jump-input').addEventListener('keydown',e=>{if(e.key==='Enter')doJump();});
+const searchInput=document.getElementById('search-input'),searchResults=document.getElementById('search-results');
+searchInput.addEventListener('input',()=>{const q=searchInput.value.trim().toUpperCase();if(q.length<2){searchResults.style.display='none';return;}const matches=filteredIndices.map(i=>({r:RECORDS[i],i})).filter(({r})=>r.name.toUpperCase().includes(q)).slice(0,20);if(matches.length===0){searchResults.style.display='none';return;}searchResults.innerHTML=matches.map(({r,i})=>{const pos=filteredIndices.indexOf(i);return `<div class="search-item" onclick="goTo(${pos})"><div class="sname">${r.name}</div><div class="smeta">${r.bookingNum} \u00b7 ${r.dob} \u00b7 ${r.sex||''} \u00b7 ${r.county||''}${r.courtHistory.length>0?' \u00b7 '+r.courtHistory.length+' court records':''}</div></div>`;}).join('');searchResults.style.display='block';});
+function goTo(pos){filteredPos=pos;render();searchResults.style.display='none';searchInput.value='';}
+document.addEventListener('click',e=>{if(!searchInput.contains(e.target)&&!searchResults.contains(e.target))searchResults.style.display='none';});
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 render();
 </script>
 </body>

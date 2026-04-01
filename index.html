@@ -556,6 +556,7 @@ function highlight(text,kw){if(!kw)return text;const idx=text.toUpperCase().inde
 function normalizeName(n){if(!n)return '';return n.toUpperCase().replace(/\b(JR|SR|II|III|IV|V)\b\.?/g,'').replace(/\s+/g,' ').trim();}
     function getLastName(n){if(!n)return '';return n.split(',')[0].trim().toUpperCase().replace(/\b(JR|SR|II|III|IV|V)\b\.?/g,'').replace(/\s+/g,' ').trim();}
     function lastNameMatches(courtName,imlName){if(!courtName)return true;return getLastName(courtName)===getLastName(imlName);}
+function dobMatches(courtDOB,imlDOB){if(!courtDOB)return true;if(!imlDOB)return true;var parts=imlDOB.split('/');if(parts.length<3)return true;var imlMMDD=parts[0]+'/'+parts[1];return courtDOB===imlMMDD;}
 function render(){
   if(filteredIndices.length===0)return;
   const idx=filteredIndices[filteredPos],rec=RECORDS[idx],chargeKw=document.getElementById('f-charge').value.trim().toUpperCase();
@@ -567,7 +568,7 @@ function render(){
   let chargeHTML=chargeCount>0?rec.charges.map(c=>{const desc=chargeKw?highlight(c.description||'\u2014',chargeKw):(c.description||'\u2014');return `<div class="charge-card"><div class="charge-desc">${desc}</div><div class="charge-meta">${c.code?`<span>${c.code}</span>`:''} ${c.grade?`<span class="${gradeClass(c.grade)}">${c.grade}</span>`:''} ${c.degree?`<span>${c.degree}</span>`:''} ${c.offenseDate?`<span>Offense: ${c.offenseDate}</span>`:''}</div></div>`;}).join(''):'<div class="empty-msg">No charge details on file.</div>';
   if(rec.bonds&&rec.bonds.length>0){chargeHTML+='<div class="bond-section-title">Bond Information</div>';chargeHTML+=rec.bonds.map(b=>`<div class="bond-card"><span class="bond-type">${b.bondType||'Bond'}</span>${b.amount&&b.amount!=='$0.00'?`<span class="bond-amount">${b.amount}</span>`:''} ${b.status?`<span style="color:#8b949e">${b.status}</span>`:''}</div>`).join('');}
   document.getElementById('charges-section').innerHTML=chargeHTML;
-  const matchedCourt=rec.courtHistory?rec.courtHistory.filter(c=>lastNameMatches(c.defendantName,rec.name)):[];const caseCount=matchedCourt.length;
+  const matchedCourt=rec.courtHistory?rec.courtHistory.filter(c=>lastNameMatches(c.defendantName,rec.name)&&dobMatches(c.defendantDOB,rec.dob)):[];const caseCount=matchedCourt.length;
   document.getElementById('court-title').textContent=`Virginia Court History (${caseCount} case${caseCount!==1?'s':''})`;
   if(caseCount===0){document.getElementById('court-section').innerHTML='<div class="no-records-msg">No Virginia court records found.</div>';}else{
     const filterDisp=document.getElementById('f-disp').value;

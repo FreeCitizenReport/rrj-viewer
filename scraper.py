@@ -210,6 +210,45 @@ def init_ocis_session(sess):
     except Exception as e:
         print(f'  OCIS session init failed: {e}')
 
+def fetch_case_dob(sess, row):
+    """Fetch defendant maskedBirthDate (MM/DD) from OCIS case detail."""
+    try:
+        detail_payload = {
+            'qualifiedFips':       row.get('qualifiedFips', ''),
+            'courtLevel':          row.get('courtLevel', ''),
+            'divisionType':        row.get('divisionType', ''),
+            'caseNumber':          row.get('caseNumber', ''),
+            'formattedCaseNumber': row.get('formattedCaseNumber', ''),
+            'name':                row.get('name', ''),
+            'offenseDate':         row.get('offenseDate', ''),
+            'chargeAmended':       row.get('chargeAmended', False),
+            'codeSection':         row.get('codeSection', ''),
+            'chargeDesc':          row.get('chargeDesc', ''),
+            'caseType':            row.get('caseType', ''),
+            'hearingDate':         row.get('hearingDate', ''),
+        }
+        r = sess.post(
+            OCIS_API + 'getCaseDetails',
+            json=detail_payload,
+            timeout=15,
+            headers={
+                'Content-Type': 'application/json',
+                'Referer':      OCIS_BASE + '/ocis/details',
+            }
+        )
+        if not r.ok:
+            return ''
+        data = r.json()
+        payload = (data.get('context', {})
+                       .get('entity', {})
+                       .get('payload', {}))
+        for p in payload.get('caseParticipant', []):
+            if p.get('participantCode') == 'DEF':
+                return p.get('personalDetails', {}).get('maskedBirthDate', '')
+        return ''
+    except Exception:
+        return ''
+
 def fetch_va_court(sess, name, dob):
     """Search OCIS 2.0 statewide for adult criminal/traffic cases by name."""
     try:
@@ -249,7 +288,9 @@ def fetch_va_court(sess, name, dob):
                 'dispositionDesc':   '',
                 'sentence':          '',
                 'defendantName':      row.get('name', ''),
+                'defendantDOB':       fetch_case_dob(sess, row),
             })
+            time.sleep(0.15)
         return cases
     except Exception as e:
         print(f'  OCIS error for {name}: {e}')

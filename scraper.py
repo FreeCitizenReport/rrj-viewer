@@ -250,20 +250,31 @@ def fetch_case_details(sess, row):
                 break
         disp = ''
         sentence = ''
-        for h in payload.get('caseHearing', []):
-            hr = h.get('hearingResult', '')
-            if hr:
-                disp = hr
+        # Disposition code from dispositionInfo.dispositionText
         disp_obj = payload.get('disposition', {})
         if disp_obj:
-            dd = disp_obj.get('dispositionDescription', '')
-            if dd:
-                disp = dd
+            di = disp_obj.get('dispositionInfo', {})
+            if di:
+                dt = di.get('dispositionText', '')
+                if dt:
+                    disp = dt
+        # Build sentence string from sentencingInformation
         sent_info = payload.get('sentencingInformation', {})
         if sent_info:
-            st = sent_info.get('sentenceDescription', '')
-            if st:
-                sentence = st
+            s = sent_info.get('sentence', {})
+            parts = []
+            if s.get('years'): parts.append(str(s['years']) + 'y')
+            if s.get('months'): parts.append(str(s['months']) + 'm')
+            if s.get('days'): parts.append(str(s['days']) + 'd')
+            if parts:
+                sentence = ' '.join(parts)
+                susp = sent_info.get('sentenceSuspended', {})
+                sp = []
+                if susp.get('years'): sp.append(str(susp['years']) + 'y')
+                if susp.get('months'): sp.append(str(susp['months']) + 'm')
+                if susp.get('days'): sp.append(str(susp['days']) + 'd')
+                if sp:
+                    sentence += ' (' + ' '.join(sp) + ' susp)'
         return {'dob': dob, 'disposition': disp, 'sentence': sentence}
     except Exception:
         return empty

@@ -210,8 +210,9 @@ def init_ocis_session(sess):
     except Exception as e:
         print(f'  OCIS session init failed: {e}')
 
-def fetch_case_dob(sess, row):
-    """Fetch defendant maskedBirthDate (MM/DD) from OCIS case detail."""
+def fetch_case_details(sess, row):
+    """Fetch defendant DOB, disposition, and sentence from OCIS case detail."""
+    empty = {'dob': '', 'disposition': '', 'sentence': ''}
     try:
         detail_payload = {
             'qualifiedFips':       row.get('qualifiedFips', ''),
@@ -237,17 +238,35 @@ def fetch_case_dob(sess, row):
             }
         )
         if not r.ok:
-            return ''
+            return empty
         data = r.json()
         payload = (data.get('context', {})
                        .get('entity', {})
                        .get('payload', {}))
+        dob = ''
         for p in payload.get('caseParticipant', []):
             if p.get('participantCode') == 'DEF':
-                return p.get('personalDetails', {}).get('maskedBirthDate', '')
-        return ''
+                dob = p.get('personalDetails', {}).get('maskedBirthDate', '')
+                break
+        disp = ''
+        sentence = ''
+        for h in payload.get('caseHearing', []):
+            hr = h.get('hearingResult', '')
+            if hr:
+                disp = hr
+        disp_obj = payload.get('disposition', {})
+        if disp_obj:
+            dd = disp_obj.get('dispositionDescription', '')
+            if dd:
+                disp = dd
+        sent_info = payload.get('sentencingInformation', {})
+        if sent_info:
+            st = sent_info.get('sentenceDescription', '')
+            if st:
+                sentence = st
+        return {'dob': dob, 'disposition': disp, 'sentence': sentence}
     except Exception:
-        return ''
+        return empty
 
 def fetch_va_court(sess, name, dob):
     """Search OCIS 2.0 statewide for adult criminal/traffic cases by name."""
@@ -276,6 +295,7 @@ def fetch_va_court(sess, name, dob):
                        .get('searchResults', []))
         cases = []
         for row in results:
+            details = fetch_case_details(sess, row)
             cases.append({
                 'formattedCaseNum':  row.get('formattedCaseNumber', ''),
                 'caseTrackingID':    row.get('caseNumber', ''),
@@ -285,10 +305,10 @@ def fetch_va_court(sess, name, dob):
                 'codeSection':       row.get('codeSection', ''),
                 'chargeDesc':        row.get('chargeDesc', ''),
                 'dispositionDate':   row.get('hearingDate', ''),
-                'dispositionDesc':   '',
-                'sentence':          '',
+                'dispositionDesc':   details.get('disposition', ''),
+                'sentence':          details.get('sentence', ''),
                 'defendantName':      row.get('name', ''),
-                'defendantDOB':       fetch_case_dob(sess, row),
+                'defendantDOB':       details.get('dob', ''),
             })
             time.sleep(0.15)
         return cases
